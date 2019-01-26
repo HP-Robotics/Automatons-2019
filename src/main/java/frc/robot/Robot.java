@@ -37,6 +37,8 @@ public class Robot extends TimedRobot {
   public Joystick driverStick;
   public Joystick operatorStick;
   public Servo hatchServo;
+  public double highServo;
+  public double lowServo;
   public boolean previous;
   public boolean servoUp;
   /**
@@ -59,7 +61,11 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    hatchServo.set(0.45);
+    SmartDashboard.putNumber("Servo High", 0.6);
+    SmartDashboard.putNumber("Servo Low", 0.3);
+
+
+    hatchServo.set(0.5);
     previous = false;
     servoUp = false;
   }
@@ -73,6 +79,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    highServo = SmartDashboard.getNumber("Servo High", 0.6);
+    lowServo = SmartDashboard.getNumber("Servo High", 0.3);
+    if(highServo > 1.0)
+      highServo = 1.0;
+    if(lowServo < 0.0)
+      lowServo = 0.0;
   }
 
   /**
@@ -115,10 +127,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    topLeft.set(ControlMode.PercentOutput, driverStick.getRawAxis(1));
-    bottomLeft.set(ControlMode.PercentOutput, driverStick.getRawAxis(1));
-    topRight.set(ControlMode.PercentOutput, -driverStick.getRawAxis(3));
-    bottomRight.set(ControlMode.PercentOutput, -driverStick.getRawAxis(3));
+    topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
+    bottomLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
+    topRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
+    bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
 
     if(driverStick.getRawButton(3)) {
       if(!previous) {
@@ -127,9 +139,9 @@ public class Robot extends TimedRobot {
       }
 
       if(servoUp) {
-        hatchServo.set(0.3);
+        hatchServo.set(highServo);
       } else {
-        hatchServo.set(0.9);
+        hatchServo.set(lowServo);
       }
 
     } else {
