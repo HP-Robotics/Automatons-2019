@@ -26,16 +26,32 @@ import edu.wpi.first.wpilibj.Servo;
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
+  
   public static final int DRIVER_STICK = 0;
   public static final int OPERATOR_STICK = 1;
+  public static final int X_BUTTON = 1;
+  public static final int A_BUTTON = 2;
+  public static final int B_BUTTON = 3;
+  public static final int Y_BUTTON = 4;
+  public static final int LEFT_BUMPER= 5;
+  public static final int RIGHT_BUMPER = 6;
+  public static final int LEFT_TRIGGER = 7;
+  public static final int RIGHT_TRIGGER = 8;
+  public static final int BACK_BUTTON = 9;
+  public static final int START_BUTTON = 10;
+
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
   public TalonSRX topRight;
   public TalonSRX topLeft;
   public TalonSRX bottomRight;
   public TalonSRX bottomLeft;
+  public TalonSRX intake;
+
   public Joystick driverStick;
   public Joystick operatorStick;
+
   public Servo hatchServo;
   public double highServo;
   public double lowServo;
@@ -47,16 +63,32 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    driverStick = new Joystick(0);
-    operatorStick = new Joystick(1);
+    driverStick = new Joystick(DRIVER_STICK);
+    operatorStick = new Joystick(OPERATOR_STICK);
+
+    /**
+     * CAN IDs
+     * 
+     * <9: Don't use
+     * 10-19: Drive train
+     * 20: PDP don't use
+     * 21-29: Misc
+     * 30-39: Intake stuff
+     * 40-49: Elevator stuff
+     * 
+     * Feel free to change
+     */
 
     topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
     bottomRight = new TalonSRX(13);
 
+    intake = new TalonSRX(30);
+
     hatchServo = new Servo(0);
-    
+
+    //ShuffleBoard
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
@@ -79,6 +111,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // ShuffleBoard
     highServo = SmartDashboard.getNumber("Servo High", 0.6);
     lowServo = SmartDashboard.getNumber("Servo High", 0.3);
     if(highServo > 1.0)
@@ -127,29 +160,38 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    //Drive Train
     topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
     bottomLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
     topRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
     bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
 
-    if(driverStick.getRawButton(3)) {
+    //Servo stuff
+    if(driverStick.getRawButton(3) || operatorStick.getRawButton(3)) {
       if(!previous) {
         previous=true;
         servoUp=!servoUp;
       }
-
-      if(servoUp) {
+      if(servoUp)
         hatchServo.set(highServo);
-      } else {
+      else
         hatchServo.set(lowServo);
-      }
 
     } else {
       previous = false;
     }
+    
+    // Intake
+    if(driverStick.getRawButton(RIGHT_BUMPER) || operatorStick.getRawButton(RIGHT_BUMPER))
+      intake.set(ControlMode.PercentOutput, -0.5);
+    else if(driverStick.getRawButton(RIGHT_TRIGGER) || operatorStick.getRawButton(RIGHT_TRIGGER))
+      intake.set(ControlMode.PercentOutput, 0.5);
+    else
+      intake.set(ControlMode.PercentOutput, 0.0);
+
+
 
   }
-
   /**
    * This function is called periodically during test mode.
    */
