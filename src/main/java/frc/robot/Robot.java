@@ -44,28 +44,20 @@ public class Robot extends TimedRobot {
   public Joystick driverStick;
   public Joystick operatorStick;
 
-  public TalonSRX hatch;
-  public TalonSRX elevator;
   public TalonSRX roller;
   public TalonSRX leftSDS;
   public TalonSRX rightSDS;
 
+  public TalonSRX hatch;
+  public TalonSRX elevator;
 
-  public boolean previousServ;
-  public boolean servoUp;
-
-  Button xButton;
-  Button aButton;
-  Button yButton;
-  Button bButton;
-  Button trigger;
-  Button thumb;
-
-  private static final double CAMERA_HEIGHT = 44.5;
-  private static final double TARGET_HEIGHT = 31.25;
-  private static final double CAMERA_ANGLE = -2.75;
-  private static final double CENTERX = 5.0;
-  public double oVertAngle;
+  public Button thumb;
+  public Button trigger;
+  public Button aButton;
+  public Button bButton;
+  public Button xButton;
+  public Button yButton;
+  
   public double lVertAngle;
   public double rVertAngle;
   public double horzAngle;
@@ -84,8 +76,21 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    driverStick = new Joystick(0);
-    operatorStick = new Joystick(1);
+    driverStick = new Joystick(DRIVER_STICK);
+    operatorStick = new Joystick(OPERATOR_STICK);
+
+    /**
+     * CAN IDs
+     * 
+     * <9: Don't use
+     * 10-19: Drive train
+     * 20: PDP don't use
+     * 21-29: Misc
+     * 30-39: Intake stuff
+     * 40-49: Elevator stuff
+     * 
+     * Feel free to change
+     */
 
     aButton = new Button(driverStick.getRawButton(5));
     bButton = new Button(driverStick.getRawButton(6));
@@ -111,8 +116,7 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    previousServ = false;
-    servoUp = false;
+
   }
   /**
    * This function is called every robot packet, no matter the mode. Use
@@ -174,11 +178,6 @@ public class Robot extends TimedRobot {
     trigger.update();
     thumb.update();
     
-    topLeft.set(ControlMode.PercentOutput, driverStick.getRawAxis(1));
-    bottomLeft.set(ControlMode.PercentOutput, driverStick.getRawAxis(1));
-    topRight.set(ControlMode.PercentOutput, -driverStick.getRawAxis(3));
-	  bottomRight.set(ControlMode.PercentOutput, -driverStick.getRawAxis(3));
-
     /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
     lVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty0").getDouble(0)*27;
@@ -209,12 +208,18 @@ public class Robot extends TimedRobot {
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
+
+    //Drive Train
+    topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
+    bottomLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
+    topRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
+    bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
+
+
     }
 
-    
 
   }
-
   /**
    * This function is called periodically during test mode.
    */
