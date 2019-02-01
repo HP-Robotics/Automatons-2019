@@ -15,6 +15,9 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -26,19 +29,55 @@ import edu.wpi.first.wpilibj.Servo;
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
+
   public static final int DRIVER_STICK = 0;
   public static final int OPERATOR_STICK = 1;
+
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
+
   public TalonSRX topRight;
   public TalonSRX topLeft;
   public TalonSRX bottomRight;
   public TalonSRX bottomLeft;
+
   public Joystick driverStick;
   public Joystick operatorStick;
-  public Servo hatchServo;
-  public boolean previous;
+
+  public TalonSRX hatch;
+  public TalonSRX elevator;
+  public TalonSRX roller;
+  public TalonSRX leftSDS;
+  public TalonSRX rightSDS;
+
+
+  public boolean previousServ;
   public boolean servoUp;
+
+  Button xButton;
+  Button aButton;
+  Button yButton;
+  Button bButton;
+  Button trigger;
+  Button thumb;
+
+  private static final double CAMERA_HEIGHT = 44.5;
+  private static final double TARGET_HEIGHT = 31.25;
+  private static final double CAMERA_ANGLE = -2.75;
+  private static final double CENTERX = 5.0;
+  public double oVertAngle;
+  public double lVertAngle;
+  public double rVertAngle;
+  public double horzAngle;
+  public double dx;
+  public double mdy;
+  public double ody;
+  public double ldy;
+  public double rdy;
+  public double xp;
+  public double yp;
+  public double heading;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -48,19 +87,31 @@ public class Robot extends TimedRobot {
     driverStick = new Joystick(0);
     operatorStick = new Joystick(1);
 
+    aButton = new Button(driverStick.getRawButton(5));
+    bButton = new Button(driverStick.getRawButton(6));
+    xButton = new Button(driverStick.getRawButton(3));
+    yButton = new Button(driverStick.getRawButton(4));
+    trigger = new Button(driverStick.getRawButton(1));
+    thumb = new Button(driverStick.getRawButton(2));
+
     topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
     bottomRight = new TalonSRX(13);
 
-    hatchServo = new Servo(0);
+    hatch = new TalonSRX(30);
     
+    elevator = new TalonSRX(40);
+
+    roller = new TalonSRX(20);
+    leftSDS = new TalonSRX(21);
+    rightSDS = new TalonSRX(22);
+
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    hatchServo.set(0.45);
-    previous = false;
+    previousServ = false;
     servoUp = false;
   }
   /**
@@ -73,6 +124,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    
   }
 
   /**
@@ -110,31 +162,56 @@ public class Robot extends TimedRobot {
     }
   }
 
-  /**
+  /** 
    * This function is called periodically during operator control.
    */
   @Override
   public void teleopPeriodic() {
+    aButton.update();
+    bButton.update();
+    xButton.update();
+    yButton.update();
+    trigger.update();
+    thumb.update();
+    
     topLeft.set(ControlMode.PercentOutput, driverStick.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, driverStick.getRawAxis(1));
     topRight.set(ControlMode.PercentOutput, -driverStick.getRawAxis(3));
-    bottomRight.set(ControlMode.PercentOutput, -driverStick.getRawAxis(3));
+	  bottomRight.set(ControlMode.PercentOutput, -driverStick.getRawAxis(3));
 
-    if(driverStick.getRawButton(3)) {
-      if(!previous) {
-        previous=true;
-        servoUp=!servoUp;
-      }
+    /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
+    oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
+    lVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty0").getDouble(0)*27;
+    rVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty1").getDouble(0)*27;
 
-      if(servoUp) {
-        hatchServo.set(0.3);
-      } else {
-        hatchServo.set(0.9);
-      }
+    ody = distanceCalc(oVertAngle);
+    ldy = distanceCalc(lVertAngle);
+    rdy = distanceCalc(rVertAngle);
 
-    } else {
-      previous = false;
+    dx = ody*Math.tan(Math.toRadians(horzAngle));
+    //System.out.println("x: "+ dx + ", y: " + ody + ", angle: " + horzAngle );
+    
+    xp = (Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX);
+    yp = Math.sqrt(Math.pow(ldy,2)-Math.pow(((Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX))-CENTERX,2));
+    heading = Math.atan(xp/yp);
+    System.out.println("d: "+oVertAngle+", d0: "+ lVertAngle + ", d1: "+rVertAngle+", x': "+ xp +", y': "+yp+", heading: "+ heading);*/
+    if(trigger.on()){
+      leftSDS.set(ControlMode.PercentOutput, 0.7);
+      rightSDS.set(ControlMode.PercentOutput, 0.7);
+      roller.set(ControlMode.PercentOutput, 0.5);
+      thumb.reset();
+    }else if(thumb.on()){
+      leftSDS.set(ControlMode.PercentOutput, -0.7);
+      rightSDS.set(ControlMode.PercentOutput, -0.7);
+      roller.set(ControlMode.PercentOutput, -0.5);
+      trigger.reset();
+    }else{
+      leftSDS.set(ControlMode.PercentOutput, 0.0);
+      rightSDS.set(ControlMode.PercentOutput, 0.0);
+      roller.set(ControlMode.PercentOutput, 0.0);
     }
+
+    
 
   }
 
@@ -143,5 +220,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void testPeriodic() {
+  }
+
+  public double distanceCalc(double tangle){
+    mdy = (TARGET_HEIGHT-CAMERA_HEIGHT)/ Math.tan(Math.toRadians(tangle+CAMERA_ANGLE));
+    double dy;
+    if(mdy>40){
+      dy = mdy + mdy*(0.000153563751273*mdy*mdy - 0.009043606024534*mdy + 0.116352752118378);
+    }else  {
+      dy = mdy;
+    }
+    return dy;
   }
 }
