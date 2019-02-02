@@ -10,8 +10,11 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.CounterBase.EncodingType;
+import edu.wpi.first.wpilibj.interfaces.Potentiometer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -27,7 +30,7 @@ public class Robot extends TimedRobot {
   private static final String kCustomAuto = "My Auto";
 
   public static final int DRIVER_STICK = 0;
-  public static final int OPERATOR_STICK = 1;
+  public static final int OPERATOR_BOX = 1;
 
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -37,8 +40,15 @@ public class Robot extends TimedRobot {
   public TalonSRX bottomRight;
   public TalonSRX bottomLeft;
 
+  public Encoder driveLeft;
+  public Encoder driveRight;
+  public Encoder elevatorEnc;
+
+  public Potentiometer winch;
+  public Potentiometer hatchlatch;
+
   public Joystick driverStick;
-  public Joystick operatorStick;
+  public Joystick operatorBox;
 
   public TalonSRX roller;
   public TalonSRX leftSDS;
@@ -53,6 +63,22 @@ public class Robot extends TimedRobot {
   public Button bButton;
   public Button xButton;
   public Button yButton;
+
+  public Button resetButton;
+  public Button magicButton;
+  public Button hatch1;
+  public Button hatch2;
+  public Button hatch3;
+  public Button cargo1;
+  public Button cargo2;
+  public Button cargo3;
+  public Button hatchFeeder;
+  public Button hatchToggle;
+  public Button sdsIn;
+  public Button sdsout;
+  public Button shipHatch;
+  public Button shipCargo;
+ 
   
   public double lVertAngle;
   public double rVertAngle;
@@ -66,6 +92,8 @@ public class Robot extends TimedRobot {
   public double yp;
   public double heading;
 
+  public LiteButton lb;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
@@ -73,7 +101,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     driverStick = new Joystick(DRIVER_STICK);
-    operatorStick = new Joystick(OPERATOR_STICK);
+    operatorBox = new Joystick(OPERATOR_BOX);
 
     /**
      * CAN IDs
@@ -88,23 +116,45 @@ public class Robot extends TimedRobot {
      * Feel free to change
      */
 
-    aButton = new Button(driverStick.getRawButton(5));
-    bButton = new Button(driverStick.getRawButton(6));
-    xButton = new Button(driverStick.getRawButton(3));
-    yButton = new Button(driverStick.getRawButton(4));
-    trigger = new Button(driverStick.getRawButton(1));
-    thumb = new Button(driverStick.getRawButton(2));
+    aButton = new Button(driverStick, 5, "A");
+    bButton = new Button(driverStick, 6, "B");
+    xButton = new Button(driverStick, 3, "X");
+    yButton = new Button(driverStick, 4, "Y");
+    trigger = new Button(driverStick, 1, "SDS In");
+    thumb = new Button(driverStick, 2, "SDS Out");
+
+    //resetButton = new Button(operatorBox, );
+    shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
+    shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
+    cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
+    cargo2 = new Button(operatorBox, 5, "Cargo Level 2");
+    cargo1 = new Button(operatorBox, 6, "Cargo Level 1");
+
+    lb = new LiteButton();
 
     topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
     bottomRight = new TalonSRX(13);
 
-    hatch = new TalonSRX(30);
-    
-    elevator = new TalonSRX(40);
+    driveRight = new Encoder(10,11, false, EncodingType.k4X);
+    driveLeft = new Encoder(12,13, true, EncodingType.k4X);
+    elevatorEnc = new Encoder(14,15, false, EncodingType.k4X);
 
-    roller = new TalonSRX(20);
+    //winch = new AnalogPotentiometer(0, 360, 30);
+    //hatchlatch = new AnalogPotentiometer(0,360,30);
+
+    ////AnalogInput ai1 = new AnalogInput(1);
+    //AnalogInput ai2 = new AnalogInput(2);
+
+    //winch = new AnalogPotentiometer(ai1, 360, 30);
+    //hatchlatch = new AnalogPotentiometer(ai2, 360, 30);
+
+    //hatch = new TalonSRX(30);
+    
+    //elevator = new TalonSRX(40);
+
+    roller = new TalonSRX(30);
     leftSDS = new TalonSRX(21);
     rightSDS = new TalonSRX(22);
 
@@ -173,7 +223,6 @@ public class Robot extends TimedRobot {
     yButton.update();
     trigger.update();
     thumb.update();
-    
     /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
     lVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty0").getDouble(0)*27;
@@ -191,19 +240,31 @@ public class Robot extends TimedRobot {
     heading = Math.atan(xp/yp);
     System.out.println("d: "+oVertAngle+", d0: "+ lVertAngle + ", d1: "+rVertAngle+", x': "+ xp +", y': "+yp+", heading: "+ heading);*/
     if(trigger.on()){
-      leftSDS.set(ControlMode.PercentOutput, 0.7);
-      rightSDS.set(ControlMode.PercentOutput, 0.7);
-      roller.set(ControlMode.PercentOutput, 0.5);
+      leftSDS.set(ControlMode.PercentOutput, -0.5);
+      rightSDS.set(ControlMode.PercentOutput, 0.5);
+      roller.set(ControlMode.PercentOutput, -0.33);
       thumb.reset();
-    }else if(thumb.on()){
-      leftSDS.set(ControlMode.PercentOutput, -0.7);
-      rightSDS.set(ControlMode.PercentOutput, -0.7);
-      roller.set(ControlMode.PercentOutput, -0.5);
+      thumb.update();
+      System.out.println("in");
+      lb.light(trigger);
+      lb.unlight(thumb);
+    }
+    if(thumb.on()){
+      leftSDS.set(ControlMode.PercentOutput, 1.0);
+      rightSDS.set(ControlMode.PercentOutput, -1.0);
+      roller.set(ControlMode.PercentOutput, 0.33);
       trigger.reset();
-    }else{
+      trigger.update();
+      System.out.println("out");
+      lb.light(thumb);
+      lb.unlight(trigger);
+    }
+    if(!trigger.on()&&!thumb.on()){
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
+      System.out.println("off");
+    }
 
     //Drive Train
     topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
@@ -212,8 +273,15 @@ public class Robot extends TimedRobot {
     bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
     }
 
+    //SmartDashboard.putNumber("left enc", driveLeft.get());
+    //SmartDashboard.putNumber("right enc", driveRight.get());
 
-  }
+   //SmartDashboard.putNumber("winch", winch.get());
+    //SmartDashboard.putNumber("hatch latch", hatchlatch.get());
+
+    
+
+
   /**
    * This function is called periodically during test mode.
    */
@@ -221,14 +289,5 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  /*public double distanceCalc(double tangle){
-    mdy = (TARGET_HEIGHT-CAMERA_HEIGHT)/ Math.tan(Math.toRadians(tangle+CAMERA_ANGLE));
-    double dy;
-    if(mdy>40){
-      dy = mdy + mdy*(0.000153563751273*mdy*mdy - 0.009043606024534*mdy + 0.116352752118378);
-    }else  {
-      dy = mdy;
-    }
-    return dy;
-  }*/
+ 
 }
