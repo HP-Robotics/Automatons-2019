@@ -14,10 +14,6 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -214,8 +210,6 @@ public class Robot extends TimedRobot {
     bottomLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
     topRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
     bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
-
-
     }
 
 
@@ -227,7 +221,7 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
-  public double distanceCalc(double tangle){
+  /*public double distanceCalc(double tangle){
     mdy = (TARGET_HEIGHT-CAMERA_HEIGHT)/ Math.tan(Math.toRadians(tangle+CAMERA_ANGLE));
     double dy;
     if(mdy>40){
@@ -236,5 +230,5 @@ public class Robot extends TimedRobot {
       dy = mdy;
     }
     return dy;
-  }
+  }*/
 }
