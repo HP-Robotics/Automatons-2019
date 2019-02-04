@@ -29,8 +29,9 @@ public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
 
-  public static final int DRIVER_STICK = 0;
-  public static final int OPERATOR_BOX = 1;
+  public static final int DRIVER_STICK1 = 0;
+  public static final int DRIVER_STICK2 = 1;
+  public static final int OPERATOR_BOX = 2;
 
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -47,7 +48,8 @@ public class Robot extends TimedRobot {
   public Potentiometer winch;
   public Potentiometer hatchlatch;
 
-  public Joystick driverStick;
+  public Joystick driverStick1;
+  public Joystick driverStick2;
   public Joystick operatorBox;
 
   public TalonSRX roller;
@@ -57,12 +59,18 @@ public class Robot extends TimedRobot {
   public TalonSRX hatch;
   public TalonSRX elevator;
 
-  public Button thumb;
-  public Button trigger;
-  public Button aButton;
-  public Button bButton;
-  public Button xButton;
-  public Button yButton;
+  public Button thumb1;
+  public Button trigger1;
+  public Button aButton1;
+  public Button bButton1;
+  public Button xButton1;
+  public Button yButton1;
+  public Button thumb2;
+  public Button trigger2;
+  public Button aButton2;
+  public Button bButton2;
+  public Button xButton2;
+  public Button yButton2;
 
   public Button resetButton;
   public Button magicButton;
@@ -100,7 +108,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    driverStick = new Joystick(DRIVER_STICK);
+    driverStick1 = new Joystick(DRIVER_STICK1);
+    driverStick2 = new Joystick(DRIVER_STICK2);
     operatorBox = new Joystick(OPERATOR_BOX);
 
     /**
@@ -116,12 +125,19 @@ public class Robot extends TimedRobot {
      * Feel free to change
      */
 
-    aButton = new Button(driverStick, 5, "A");
-    bButton = new Button(driverStick, 6, "B");
-    xButton = new Button(driverStick, 3, "X");
-    yButton = new Button(driverStick, 4, "Y");
-    trigger = new Button(driverStick, 1, "SDS In");
-    thumb = new Button(driverStick, 2, "SDS Out");
+    aButton1 = new Button(driverStick1, 5, "A");
+    bButton1 = new Button(driverStick1, 6, "B");
+    xButton1 = new Button(driverStick1, 3, "X");
+    yButton1 = new Button(driverStick1, 4, "Y");
+    trigger1 = new Button(driverStick1, 1, "SDS In");
+    thumb1 = new Button(driverStick1, 2, "SDS Out");
+
+    aButton2 = new Button(driverStick1, 5, "A");
+    bButton2 = new Button(driverStick1, 6, "B");
+    xButton2 = new Button(driverStick1, 3, "X");
+    yButton2 = new Button(driverStick1, 4, "Y");
+    trigger2 = new Button(driverStick1, 1, "SDS In");
+    thumb2 = new Button(driverStick1, 2, "SDS Out");
 
     //resetButton = new Button(operatorBox, );
     shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
@@ -217,12 +233,18 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    aButton.update();
-    bButton.update();
-    xButton.update();
-    yButton.update();
-    trigger.update();
-    thumb.update();
+    aButton1.update();
+    bButton1.update();
+    xButton1.update();
+    yButton1.update();
+    trigger1.update();
+    thumb1.update();
+    aButton2.update();
+    bButton2.update();
+    xButton2.update();
+    yButton2.update();
+    trigger2.update();
+    thumb2.update();
     /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
     lVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty0").getDouble(0)*27;
@@ -239,27 +261,31 @@ public class Robot extends TimedRobot {
     yp = Math.sqrt(Math.pow(ldy,2)-Math.pow(((Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX))-CENTERX,2));
     heading = Math.atan(xp/yp);
     System.out.println("d: "+oVertAngle+", d0: "+ lVertAngle + ", d1: "+rVertAngle+", x': "+ xp +", y': "+yp+", heading: "+ heading);*/
-    if(trigger.on()){
+    if(trigger1.on() || trigger2.on()){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
       roller.set(ControlMode.PercentOutput, -0.33);
-      thumb.reset();
-      thumb.update();
+      thumb1.reset();
+      thumb2.reset();
+      thumb1.update();
+      thumb2.update();
       System.out.println("in");
-      lb.light(trigger);
-      lb.unlight(thumb);
+      lb.light(trigger1);
+      lb.unlight(thumb1);
     }
-    if(thumb.on()){
+    if(thumb1.on() || thumb2.on()){
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
       roller.set(ControlMode.PercentOutput, 0.33);
-      trigger.reset();
-      trigger.update();
+      trigger1.reset();
+      trigger2.reset();
+      trigger1.update();
+      trigger2.update();
       System.out.println("out");
-      lb.light(thumb);
-      lb.unlight(trigger);
+      lb.light(thumb1);
+      lb.unlight(trigger1);
     }
-    if(!trigger.on()&&!thumb.on()){
+    if(!trigger1.on()&&!thumb1.on()&&!trigger2.on()&&!thumb2.on()){
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
@@ -267,10 +293,10 @@ public class Robot extends TimedRobot {
     }
 
     //Drive Train
-    topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
-    bottomLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
-    topRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
-    bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
+    topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
+    bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
+    topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+    bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
     }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
