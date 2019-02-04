@@ -36,8 +36,9 @@ public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
 
-  public static final int DRIVER_STICK = 0;
-  public static final int OPERATOR_BOX = 1;
+  public static final int DRIVER_STICK1 = 0;
+  public static final int DRIVER_STICK2 = 1;
+  public static final int OPERATOR_BOX = 2;
 
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
@@ -82,7 +83,7 @@ public class Robot extends TimedRobot {
   public Button hatchFeeder;
   public Button hatchToggle;
   public Button sdsIn;
-  public Button sdsout;
+  public Button sdsOut;
   public Button shipHatch;
   public Button shipCargo;
  
@@ -107,7 +108,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    driverStick = new Joystick(DRIVER_STICK);
+    driverStick = new Joystick(DRIVER_STICK1);
     operatorBox = new Joystick(OPERATOR_BOX);
 
     /**
@@ -130,12 +131,15 @@ public class Robot extends TimedRobot {
     trigger = new Button(driverStick, 1, "SDS In");
     thumb = new Button(driverStick, 2, "SDS Out");
 
-    //resetButton = new Button(operatorBox, );
-    shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
-    shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
-    cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
-    cargo2 = new Button(operatorBox, 5, "Cargo Level 2");
-    cargo1 = new Button(operatorBox, 6, "Cargo Level 1");
+    // resetButton = new Button(operatorBox, );
+    // shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
+    // shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
+    // cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
+    // hatch3 = new Button(operatorBox, 5, "Hatch Level 2");
+    // cargo2 = new Button(operatorBox, 6, "Cargo Level 2");
+    // hatch2 = new Button(operatorBox, 7, "Hatch Level 2")
+    sdsIn = new Button(operatorBox, 8, "SDS In");
+    sdsOut = new Button(operatorBox, 9, "SDS Out");
 
     lb = new LiteButton();
 
@@ -270,14 +274,16 @@ public class Robot extends TimedRobot {
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
+      lb.unlight(thumb);
+      lb.unlight(trigger);
       System.out.println("off");
     }
 
     //Drive Train
-    topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
+    /*topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
     bottomLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
     topRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
-    bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
+    bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));*/
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
     //SmartDashboard.putNumber("right enc", driveRight.get());
