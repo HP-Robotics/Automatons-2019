@@ -305,12 +305,12 @@ public class Robot extends TimedRobot {
       lb.unlight(trigger1);
       System.out.println("off");
     }
-  }
     //Drive Train
-    /*topLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
-    bottomLeft.set(ControlMode.PercentOutput, -Math.pow(driverStick.getRawAxis(1), 3));
-    topRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));
-    bottomRight.set(ControlMode.PercentOutput, Math.pow(driverStick.getRawAxis(3), 3));*/
+    topLeft.set(ControlMode.PercentOutput, Math.cbrt(-driverStick1.getRawAxis(1)));
+    bottomLeft.set(ControlMode.PercentOutput, Math.cbrt(-driverStick1.getRawAxis(1)));
+    topRight.set(ControlMode.PercentOutput, Math.cbrt(driverStick2.getRawAxis(1)));
+    bottomRight.set(ControlMode.PercentOutput, Math.cbrt(driverStick2.getRawAxis(1)));
+  }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
     //SmartDashboard.putNumber("right enc", driveRight.get());
