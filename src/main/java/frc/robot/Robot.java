@@ -83,7 +83,7 @@ public class Robot extends TimedRobot {
   public Button hatchFeeder;
   public Button hatchToggle;
   public Button sdsIn;
-  public Button sdsout;
+  public Button sdsOut;
   public Button shipHatch;
   public Button shipCargo;
  
@@ -139,16 +139,15 @@ public class Robot extends TimedRobot {
     trigger2 = new Button(driverStick1, 1, "SDS In");
     thumb2 = new Button(driverStick1, 2, "SDS Out");
 
-    //sdsIn = new Button(operatorBox, 10, "SDS In");
-    //sdsOut = new Button(operatorBox, 11, "SDS Out");
-
-
-    //resetButton = new Button(operatorBox, );
-    shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
-    shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
-    cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
-    cargo2 = new Button(operatorBox, 5, "Cargo Level 2");
-    cargo1 = new Button(operatorBox, 6, "Cargo Level 1");
+    // resetButton = new Button(operatorBox, );
+    // shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
+    // shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
+    // cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
+    // hatch3 = new Button(operatorBox, 5, "Hatch Level 2");
+    // cargo2 = new Button(operatorBox, 6, "Cargo Level 2");
+    // hatch2 = new Button(operatorBox, 7, "Hatch Level 2")
+    sdsIn = new Button(operatorBox, 8, "SDS In");
+    sdsOut = new Button(operatorBox, 9, "SDS Out");
 
     lb = new LiteButton();
 
@@ -293,15 +292,16 @@ public class Robot extends TimedRobot {
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
+      lb.unlight(thumb1);
+      lb.unlight(trigger1);
       System.out.println("off");
     }
-
     //Drive Train
     topLeft.set(ControlMode.PercentOutput, Math.cbrt(-driverStick1.getRawAxis(1)));
     bottomLeft.set(ControlMode.PercentOutput, Math.cbrt(-driverStick1.getRawAxis(1)));
     topRight.set(ControlMode.PercentOutput, Math.cbrt(driverStick2.getRawAxis(1)));
     bottomRight.set(ControlMode.PercentOutput, Math.cbrt(driverStick2.getRawAxis(1)));
-    }
+  }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
     //SmartDashboard.putNumber("right enc", driveRight.get());
