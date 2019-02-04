@@ -58,6 +58,7 @@ public class Robot extends TimedRobot {
 
   public TalonSRX hatch;
   public TalonSRX elevator;
+  public TalonSRX winchMotor;
 
   public Button thumb1;
   public Button trigger1;
@@ -176,6 +177,7 @@ public class Robot extends TimedRobot {
     roller = new TalonSRX(30);
     leftSDS = new TalonSRX(21);
     rightSDS = new TalonSRX(22);
+    winchMotor = new TalonSRX(40);
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
@@ -264,6 +266,13 @@ public class Robot extends TimedRobot {
     yp = Math.sqrt(Math.pow(ldy,2)-Math.pow(((Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX))-CENTERX,2));
     heading = Math.atan(xp/yp);
     System.out.println("d: "+oVertAngle+", d0: "+ lVertAngle + ", d1: "+rVertAngle+", x': "+ xp +", y': "+yp+", heading: "+ heading);*/
+
+    if(yButton1.held()){
+      winchMotor.set(ControlMode.PercentOutput, 0.5);
+    }else{
+      winchMotor.set(ControlMode.PercentOutput, 0.0);
+    }
+
     if(trigger1.on() || trigger2.on()){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
