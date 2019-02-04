@@ -139,6 +139,10 @@ public class Robot extends TimedRobot {
     trigger2 = new Button(driverStick1, 1, "SDS In");
     thumb2 = new Button(driverStick1, 2, "SDS Out");
 
+    //sdsIn = new Button(operatorBox, 10, "SDS In");
+    //sdsOut = new Button(operatorBox, 11, "SDS Out");
+
+
     //resetButton = new Button(operatorBox, );
     shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
     shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
@@ -293,10 +297,10 @@ public class Robot extends TimedRobot {
     }
 
     //Drive Train
-    topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
-    bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
-    topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
-    bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+    topLeft.set(ControlMode.PercentOutput, Math.cbrt(-driverStick1.getRawAxis(1)));
+    bottomLeft.set(ControlMode.PercentOutput, Math.cbrt(-driverStick1.getRawAxis(1)));
+    topRight.set(ControlMode.PercentOutput, Math.cbrt(driverStick2.getRawAxis(1)));
+    bottomRight.set(ControlMode.PercentOutput, Math.cbrt(driverStick2.getRawAxis(1)));
     }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
