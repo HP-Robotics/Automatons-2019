@@ -148,12 +148,14 @@ public class Robot extends TimedRobot {
     thumb2 = new Button(driverStick1, 2, "SDS Out");
 
     // resetButton = new Button(operatorBox, );
-    // shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
-    // shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
-    // cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
-    // hatch3 = new Button(operatorBox, 5, "Hatch Level 2");
-    // cargo2 = new Button(operatorBox, 6, "Cargo Level 2");
-    // hatch2 = new Button(operatorBox, 7, "Hatch Level 2")
+    shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
+    shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
+    cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
+    hatch3 = new Button(operatorBox, 5, "Hatch Level 2");
+    cargo2 = new Button(operatorBox, 6, "Cargo Level 2");
+    hatch2 = new Button(operatorBox, 7, "Hatch Level 2");
+    cargo1 = new Button(operatorBox, 10, "Cargo Level 1");
+    hatch1 = new Button(operatorBox, 11, "Hatch Level 1");
     sdsIn = new Button(operatorBox, 8, "SDS In");
     sdsOut = new Button(operatorBox, 9, "SDS Out");
 
