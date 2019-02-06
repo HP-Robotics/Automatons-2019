@@ -33,6 +33,14 @@ public class Robot extends TimedRobot {
   public static final int DRIVER_STICK2 = 1;
   public static final int OPERATOR_BOX = 2;
 
+  public static final int ENC_ERROR = 5;
+  public static final int HATCH_LEVEL1 = 2048;
+  public static final int HATCH_LEVEL2 = 4096;
+  public static final int HATCH_LEVEL3 = 6144;
+  public static final int CARGO_LEVEL1 = 3072;
+  public static final int CARGO_LEVEL2 = 5120;
+  public static final int CARGO_LEVEL3 = 7168;
+
   private String m_autoSelected;
   private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
@@ -88,7 +96,6 @@ public class Robot extends TimedRobot {
   public Button shipHatch;
   public Button shipCargo;
  
-  
   public double lVertAngle;
   public double rVertAngle;
   public double horzAngle;
@@ -141,12 +148,14 @@ public class Robot extends TimedRobot {
     thumb2 = new Button(driverStick2, 2, "SDS Out");
 
     // resetButton = new Button(operatorBox, );
-    // shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
-    // shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
-    // cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
-    // hatch3 = new Button(operatorBox, 5, "Hatch Level 2");
-    // cargo2 = new Button(operatorBox, 6, "Cargo Level 2");
-    // hatch2 = new Button(operatorBox, 7, "Hatch Level 2")
+    shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
+    shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
+    cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
+    hatch3 = new Button(operatorBox, 5, "Hatch Level 2");
+    cargo2 = new Button(operatorBox, 6, "Cargo Level 2");
+    hatch2 = new Button(operatorBox, 7, "Hatch Level 2");
+    cargo1 = new Button(operatorBox, 10, "Cargo Level 1");
+    hatch1 = new Button(operatorBox, 11, "Hatch Level 1");
     sdsIn = new Button(operatorBox, 8, "SDS In");
     sdsOut = new Button(operatorBox, 9, "SDS Out");
 
@@ -301,11 +310,68 @@ public class Robot extends TimedRobot {
       lb.unlight(trigger1);
       System.out.println("off");
     }
+
     //Drive Train
     topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
     bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+
+    if(elevatorEnc.get() > HATCH_LEVEL1 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL1 + ENC_ERROR) {
+      lb.light(hatch1);
+      lb.light(shipHatch);
+      lb.unlight(cargo1);
+      lb.unlight(cargo2);
+      lb.unlight(cargo3);
+      lb.unlight(hatch2);
+      lb.unlight(hatch3);
+      lb.unlight(shipCargo);
+    } else if(elevatorEnc.get() > HATCH_LEVEL2 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL2 + ENC_ERROR) {
+      lb.light(hatch2);
+      lb.unlight(shipHatch);
+      lb.unlight(cargo1);
+      lb.unlight(cargo2);
+      lb.unlight(cargo3);
+      lb.unlight(hatch1);
+      lb.unlight(hatch3);
+      lb.unlight(shipCargo);
+    } else if(elevatorEnc.get() > HATCH_LEVEL3 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL3 + ENC_ERROR) {
+      lb.light(hatch3);
+      lb.unlight(shipHatch);
+      lb.unlight(cargo1);
+      lb.unlight(cargo2);
+      lb.unlight(cargo3);
+      lb.unlight(hatch1);
+      lb.unlight(hatch2);
+      lb.unlight(shipCargo);
+    } else if(elevatorEnc.get() > CARGO_LEVEL1 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL1 + ENC_ERROR) {
+      lb.light(cargo1);
+      lb.light(shipCargo);
+      lb.unlight(cargo2);
+      lb.unlight(cargo3);
+      lb.unlight(hatch1);
+      lb.unlight(hatch2);
+      lb.unlight(hatch3);
+      lb.unlight(shipHatch);
+    } else if(elevatorEnc.get() > CARGO_LEVEL2 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL2 + ENC_ERROR) {
+      lb.light(cargo2);
+      lb.unlight(shipCargo);
+      lb.unlight(cargo1);
+      lb.unlight(cargo3);
+      lb.unlight(hatch1);
+      lb.unlight(hatch2);
+      lb.unlight(hatch3);
+      lb.unlight(shipHatch);
+    } else if(elevatorEnc.get() > CARGO_LEVEL3 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL3 + ENC_ERROR) {
+      lb.light(cargo3);
+      lb.unlight(shipCargo);
+      lb.unlight(cargo1);
+      lb.unlight(cargo2);
+      lb.unlight(hatch1);
+      lb.unlight(hatch2);
+      lb.unlight(hatch3);
+      lb.unlight(shipHatch);
+    }
   }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
