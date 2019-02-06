@@ -140,12 +140,12 @@ public class Robot extends TimedRobot {
     trigger1 = new Button(driverStick1, 1, "SDS In");
     thumb1 = new Button(driverStick1, 2, "SDS Out");
 
-    aButton2 = new Button(driverStick1, 5, "A");
-    bButton2 = new Button(driverStick1, 6, "B");
-    xButton2 = new Button(driverStick1, 3, "X");
-    yButton2 = new Button(driverStick1, 4, "Y");
-    trigger2 = new Button(driverStick1, 1, "SDS In");
-    thumb2 = new Button(driverStick1, 2, "SDS Out");
+    aButton2 = new Button(driverStick2, 5, "A");
+    bButton2 = new Button(driverStick2, 6, "B");
+    xButton2 = new Button(driverStick2, 3, "X");
+    yButton2 = new Button(driverStick2, 4, "Y");
+    trigger2 = new Button(driverStick2, 1, "SDS In");
+    thumb2 = new Button(driverStick2, 2, "SDS Out");
 
     // resetButton = new Button(operatorBox, );
     shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
@@ -282,31 +282,27 @@ public class Robot extends TimedRobot {
       winchMotor.set(ControlMode.PercentOutput, 0.0);
     }
 
-    if(trigger1.on() || trigger2.on()){
+    if(trigger1.on()){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
       roller.set(ControlMode.PercentOutput, -0.33);
-      thumb1.reset();
-      thumb2.reset();
-      thumb1.update();
-      thumb2.update();
+      trigger2.reset();
+      trigger2.update();
       System.out.println("in");
-      lb.light(trigger1);
-      lb.unlight(thumb1);
+      //lb.light(trigger1);
+      //lb.unlight(thumb1);
     }
-    if(thumb1.on() || thumb2.on()){
+    if(trigger2.on()){
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
       roller.set(ControlMode.PercentOutput, 0.33);
       trigger1.reset();
-      trigger2.reset();
       trigger1.update();
-      trigger2.update();
       System.out.println("out");
-      lb.light(thumb1);
-      lb.unlight(trigger1);
+      //lb.light(thumb1);
+      //lb.unlight(trigger1);
     }
-    if(!trigger1.on()&&!thumb1.on()&&!trigger2.on()&&!thumb2.on()){
+    if(!trigger1.on()&&!trigger2.on()){
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
