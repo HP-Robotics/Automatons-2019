@@ -53,8 +53,8 @@ public class Robot extends TimedRobot {
   public Encoder driveRight;
   public Encoder elevatorEnc;
 
-  public Potentiometer winch;
-  public Potentiometer hatchlatch;
+  public Potentiometer winchPot;
+  public Potentiometer hatchPot;
 
   public Joystick driverStick1;
   public Joystick driverStick2;
@@ -66,7 +66,7 @@ public class Robot extends TimedRobot {
 
   public TalonSRX hatch;
   public TalonSRX elevator;
-  public TalonSRX winchMotor;
+  public TalonSRX winch;
 
   public Button thumb1;
   public Button trigger1;
@@ -80,6 +80,10 @@ public class Robot extends TimedRobot {
   public Button bButton2;
   public Button xButton2;
   public Button yButton2;
+  public Button hatchInButton1;
+  public Button hatchOutButton1;
+  public Button hatchInButton2;
+  public Button hatchOutButton2;
 
   public Button resetButton;
   public Button magicButton;
@@ -147,6 +151,12 @@ public class Robot extends TimedRobot {
     trigger2 = new Button(driverStick2, 1, "SDS In");
     thumb2 = new Button(driverStick2, 2, "SDS Out");
 
+    hatchInButton1 = new Button(driverStick1, 9, "Hatch In");
+    hatchOutButton1 = new Button(driverStick1, 10, "Hatch Out");
+
+    hatchInButton2 = new Button(driverStick2, 9, "Hatch In");
+    hatchOutButton2 = new Button(driverStick2, 10, "Hatch Out");
+
     // resetButton = new Button(operatorBox, );
     shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
     shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
@@ -171,22 +181,21 @@ public class Robot extends TimedRobot {
     elevatorEnc = new Encoder(14,15, false, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
-    //hatchlatch = new AnalogPotentiometer(0,360,30);
+    //hatchPot = new AnalogPotentiometer(0,360,30);
 
     ////AnalogInput ai1 = new AnalogInput(1);
     //AnalogInput ai2 = new AnalogInput(2);
 
     //winch = new AnalogPotentiometer(ai1, 360, 30);
-    //hatchlatch = new AnalogPotentiometer(ai2, 360, 30);
-
-    //hatch = new TalonSRX(30);
+    //hatchPot = new AnalogPotentiometer(ai2, 360, 30);
     
-    //elevator = new TalonSRX(40);
 
     roller = new TalonSRX(30);
     leftSDS = new TalonSRX(21);
     rightSDS = new TalonSRX(22);
-    winchMotor = new TalonSRX(40);
+    winch = new TalonSRX(32);
+    hatch = new TalonSRX(31);
+    elevator = new TalonSRX(40);
 
     m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
     m_chooser.addOption("My Auto", kCustomAuto);
@@ -259,6 +268,11 @@ public class Robot extends TimedRobot {
     yButton2.update();
     trigger2.update();
     thumb2.update();
+    hatchInButton1.update();
+    hatchOutButton1.update();
+    hatchInButton2.update();
+    hatchOutButton2.update();
+
     /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
     lVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty0").getDouble(0)*27;
@@ -275,12 +289,6 @@ public class Robot extends TimedRobot {
     yp = Math.sqrt(Math.pow(ldy,2)-Math.pow(((Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX))-CENTERX,2));
     heading = Math.atan(xp/yp);
     System.out.println("d: "+oVertAngle+", d0: "+ lVertAngle + ", d1: "+rVertAngle+", x': "+ xp +", y': "+yp+", heading: "+ heading);*/
-
-    if(yButton1.held()){
-      winchMotor.set(ControlMode.PercentOutput, 0.5);
-    }else{
-      winchMotor.set(ControlMode.PercentOutput, 0.0);
-    }
 
     if(trigger1.on()){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
@@ -372,13 +380,35 @@ public class Robot extends TimedRobot {
       lb.unlight(hatch3);
       lb.unlight(shipHatch);
     }
+
+    // Elevator Garbage Fire
+    if(aButton1.held())
+      elevator.set(ControlMode.PercentOutput, 0.4);
+    else if (bButton1.held())
+      elevator.set(ControlMode.PercentOutput, -0.4);
+    else
+      elevator.set(ControlMode.PercentOutput, 0.0);
+
+    if(xButton1.held())
+      winch.set(ControlMode.PercentOutput, 0.4);
+    else if (yButton1.held())
+      winch.set(ControlMode.PercentOutput, -0.4);
+    else
+      winch.set(ControlMode.PercentOutput, 0.0);
+    
+    if(hatchInButton1.held())
+      hatch.set(ControlMode.PercentOutput, 0.4);
+    else if (hatchOutButton1.held())
+      hatch.set(ControlMode.PercentOutput, -0.4);
+    else
+      hatch.set(ControlMode.PercentOutput, 0.0);
   }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
     //SmartDashboard.putNumber("right enc", driveRight.get());
 
    //SmartDashboard.putNumber("winch", winch.get());
-    //SmartDashboard.putNumber("hatch latch", hatchlatch.get());
+    //SmartDashboard.putNumber("hatch latch", hatchPot.get());
 
     
 
