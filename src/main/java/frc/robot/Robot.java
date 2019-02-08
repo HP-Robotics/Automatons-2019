@@ -29,6 +29,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
+  public static final double P = 0.005;
+  public static final double I = 0;
+  public static final double D = 0;
+  public static final double setPoint = 2600;
+  public SnazzyPIDController hatchController;
+  public TalonPIDOutput talonPIDOutput;
 
   public static final int DRIVER_STICK1 = 0;
   public static final int DRIVER_STICK2 = 1;
@@ -202,7 +208,13 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
+    SmartDashboard.putNumber("P", P);
+    SmartDashboard.putNumber("I", I);
+    SmartDashboard.putNumber("D", D);
+    SmartDashboard.putNumber("setPoint", setPoint);
+    talonPIDOutput = new TalonPIDOutput(hatch);
 
+    hatchController = new SnazzyPIDController(0, 0, 0, 0, hatchPot, talonPIDOutput, 0.05, "hatch.csv");
   }
   /**
    * This function is called every robot packet, no matter the mode. Use
@@ -215,6 +227,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     SmartDashboard.putNumber("hatchPot", hatchPot.get());
+    hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
   }
 
   /**
@@ -395,7 +408,7 @@ public class Robot extends TimedRobot {
     else
       winch.set(ControlMode.PercentOutput, 0.0);
     
-    if(hatchPot.get()>=1500 && hatchPot.get()<=3500) {
+    /*if(hatchPot.get()>=1500 && hatchPot.get()<=3500) {
       if(hatchInButton1.held() && hatchPot.get()<2690)
         hatch.set(ControlMode.PercentOutput, -0.2);
       else if (hatchOutButton1.held() && hatchPot.get()>=2600)
@@ -404,7 +417,16 @@ public class Robot extends TimedRobot {
         hatch.set(ControlMode.PercentOutput, 0.0);
     } else
         hatch.set(ControlMode.PercentOutput, 0.0);
-    
+    */
+
+    if(hatchInButton1.held()) {
+      hatchController.setSetpoint(2600);
+      hatchController.enable();
+    } else if(hatchOutButton1.held()) {
+      hatchController.setSetpoint(2690);
+      hatchController.enable();
+    } else
+        hatchController.disable();
   }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
