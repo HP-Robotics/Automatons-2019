@@ -10,6 +10,7 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -181,7 +182,7 @@ public class Robot extends TimedRobot {
     elevatorEnc = new Encoder(14,15, false, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
-    //hatchPot = new AnalogPotentiometer(0,360,30);
+    hatchPot = new AnalogPotentiometer(0, 10*360, 0); /* 2700 Max, 2610 Min */
 
     ////AnalogInput ai1 = new AnalogInput(1);
     //AnalogInput ai2 = new AnalogInput(2);
@@ -213,7 +214,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    
+    SmartDashboard.putNumber("hatchPot", hatchPot.get());
   }
 
   /**
@@ -316,9 +317,7 @@ public class Robot extends TimedRobot {
       roller.set(ControlMode.PercentOutput, 0.0);
       lb.unlight(thumb1);
       lb.unlight(trigger1);
-      System.out.println("off");
     }
-
     //Drive Train
     topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
@@ -396,12 +395,16 @@ public class Robot extends TimedRobot {
     else
       winch.set(ControlMode.PercentOutput, 0.0);
     
-    if(hatchInButton1.held())
-      hatch.set(ControlMode.PercentOutput, 0.4);
-    else if (hatchOutButton1.held())
-      hatch.set(ControlMode.PercentOutput, -0.4);
-    else
-      hatch.set(ControlMode.PercentOutput, 0.0);
+    if(hatchPot.get()>=1500 && hatchPot.get()<=3500) {
+      if(hatchInButton1.held() && hatchPot.get()<2690)
+        hatch.set(ControlMode.PercentOutput, -0.2);
+      else if (hatchOutButton1.held() && hatchPot.get()>=2600)
+        hatch.set(ControlMode.PercentOutput, 0.2);
+      else
+        hatch.set(ControlMode.PercentOutput, 0.0);
+    } else
+        hatch.set(ControlMode.PercentOutput, 0.0);
+    
   }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());
