@@ -185,7 +185,7 @@ public class Robot extends TimedRobot {
 
     driveRight = new Encoder(10,11, false, EncodingType.k4X);
     driveLeft = new Encoder(12,13, true, EncodingType.k4X);
-    elevatorEnc = new Encoder(14,15, false, EncodingType.k4X);
+    elevatorEnc = new Encoder(0,1, false, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
     hatchPot = new AnalogPotentiometer(0, 10*360, 0); /* 2700 Max, 2610 Min */
@@ -227,6 +227,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     SmartDashboard.putNumber("hatchPot", hatchPot.get());
+    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
     hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
   }
 
@@ -421,11 +422,14 @@ public class Robot extends TimedRobot {
 
     if(hatchInButton1.held()) {
       hatchController.setSetpoint(2600);
-      hatchController.enable();
+      if(!hatchController.isEnabled())
+        hatchController.enable();
     } else if(hatchOutButton1.held()) {
       hatchController.setSetpoint(2690);
-      hatchController.enable();
+      if(!hatchController.isEnabled())
+        hatchController.enable();
     } else
+      if(hatchController.isEnabled())
         hatchController.disable();
   }
 
