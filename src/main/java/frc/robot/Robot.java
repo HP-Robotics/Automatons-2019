@@ -29,12 +29,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
   private static final String kCustomAuto = "My Auto";
-  public static final double P = 0.005;
-  public static final double I = 0;
-  public static final double D = 0;
-  public static final double setPoint = 2600;
+
   public SnazzyPIDController hatchController;
   public TalonPIDOutput talonPIDOutput;
+  public SnazzyPIDController winchController;
+  public TalonPIDOutput winchPIDOutput;
+  public SnazzyPIDController elevatorController;
+  public TalonPIDOutput elevatorPIDOutput;
 
   public static final int DRIVER_STICK1 = 0;
   public static final int DRIVER_STICK2 = 1;
@@ -59,6 +60,7 @@ public class Robot extends TimedRobot {
   public Encoder driveLeft;
   public Encoder driveRight;
   public Encoder elevatorEnc;
+  public Encoder winchEnc;
 
   public Potentiometer winchPot;
   public Potentiometer hatchPot;
@@ -189,6 +191,7 @@ public class Robot extends TimedRobot {
     driveRight = new Encoder(10,11, false, EncodingType.k4X);
     driveLeft = new Encoder(12,13, true, EncodingType.k4X);
     elevatorEnc = new Encoder(0,1, false, EncodingType.k4X);
+    winchEnc = new Encoder(14,15,false, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
     hatchPot = new AnalogPotentiometer(0, 10*360, 0); /* 2700 Max, 2610 Min */
@@ -203,7 +206,7 @@ public class Robot extends TimedRobot {
     roller = new TalonSRX(30);
     leftSDS = new TalonSRX(21);
     rightSDS = new TalonSRX(22);
-    winch = new TalonSRX(32);
+    winch = new TalonSRX(10);
     hatch = new TalonSRX(31);
     elevator = new TalonSRX(40);
 
@@ -211,13 +214,18 @@ public class Robot extends TimedRobot {
     m_chooser.addOption("My Auto", kCustomAuto);
     SmartDashboard.putData("Auto choices", m_chooser);
 
-    SmartDashboard.putNumber("P", P);
-    SmartDashboard.putNumber("I", I);
-    SmartDashboard.putNumber("D", D);
-    SmartDashboard.putNumber("setPoint", setPoint);
+    SmartDashboard.putNumber("P", 0.0);
+    SmartDashboard.putNumber("I", 0.0);
+    SmartDashboard.putNumber("D", 0.0);
+    SmartDashboard.putNumber("setPoint", 0.0);
+
     talonPIDOutput = new TalonPIDOutput(hatch);
+    winchPIDOutput = new TalonPIDOutput(winch);
+    elevatorPIDOutput = new TalonPIDOutput(elevator);
 
     hatchController = new SnazzyPIDController(0, 0, 0, 0, hatchPot, talonPIDOutput, 0.05, "hatch.csv");
+    winchController = new SnazzyPIDController(0, 0, 0, 0, winchEnc, winchPIDOutput, 0.05, "winch.csv" );
+    elevatorController = new SnazzyPIDController(0, 0, 0, 0, elevatorEnc, elevatorPIDOutput, 0.05, "elevator.csv");
   }
   /**
    * This function is called every robot packet, no matter the mode. Use
@@ -359,6 +367,7 @@ public class Robot extends TimedRobot {
       lb.unlight(thumb1);
       lb.unlight(trigger1);
     }
+    
     //Drive Train
     topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
@@ -429,12 +438,16 @@ public class Robot extends TimedRobot {
     else
       elevator.set(ControlMode.PercentOutput, 0.0);
 
-    if(xButton1.held())
-      winch.set(ControlMode.PercentOutput, 0.4);
-    else if (yButton1.held())
-      winch.set(ControlMode.PercentOutput, -0.4);
-    else
+    if(xButton1.held()){
+      winch.set(ControlMode.PercentOutput, 1.0);
+    }
+    else if (yButton1.held()){
+      winch.set(ControlMode.PercentOutput, -1.0);
+    }
+      
+    else{
       winch.set(ControlMode.PercentOutput, 0.0);
+    }
     
     /*if(hatchPot.get()>=1500 && hatchPot.get()<=3500) {
       if(hatchInButton1.held() && hatchPot.get()<2690)
@@ -446,18 +459,25 @@ public class Robot extends TimedRobot {
     } else
         hatch.set(ControlMode.PercentOutput, 0.0);
     */
-
-    if(hatchInButton1.held()) {
-      hatchController.setSetpoint(2600);
-      if(!hatchController.isEnabled())
-        hatchController.enable();
-    } else if(hatchOutButton1.held()) {
-      hatchController.setSetpoint(2690);
-      if(!hatchController.isEnabled())
-        hatchController.enable();
-    } else
-      if(hatchController.isEnabled())
+    if (hatchPot.get() >= 1500 && hatchPot.get() <= 3500) {
+      if (hatchInButton1.held()) {
+        if (!hatchController.isEnabled()) {
+          hatchController.enable();
+          hatchController.setSetpoint(2500);
+          System.out.println("Hatch is down");
+        }
+      } else if (hatchOutButton1.held()) {
+        if (!hatchController.isEnabled()) {
+          hatchController.enable();
+          hatchController.setSetpoint(2590);
+          System.out.println("Hatch is up");
+        }
+      } else if (hatchController.isEnabled()){
         hatchController.disable();
+      }
+    }else{
+      hatchController.disable();
+    }
   }
 
     //SmartDashboard.putNumber("left enc", driveLeft.get());

@@ -14,7 +14,7 @@ public class TalonPIDOutput implements PIDOutput {
 
 	@Override
 	public void pidWrite(double output) {
-		m.set(ControlMode.PercentOutput, -output);
+		m.set(ControlMode.PercentOutput, output);
 		
 	}
 
