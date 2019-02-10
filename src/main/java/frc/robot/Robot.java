@@ -27,8 +27,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
 
   public SnazzyPIDController hatchController;
   public TalonPIDOutput talonPIDOutput;
@@ -49,8 +47,6 @@ public class Robot extends TimedRobot {
   public static final int CARGO_LEVEL2 = 5120;
   public static final int CARGO_LEVEL3 = 7168;
 
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
   public TalonSRX topRight;
   public TalonSRX topLeft;
@@ -210,10 +206,6 @@ public class Robot extends TimedRobot {
     hatch = new TalonSRX(31);
     elevator = new TalonSRX(40);
 
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
-
     SmartDashboard.putNumber("P", 0.0);
     SmartDashboard.putNumber("I", 0.0);
     SmartDashboard.putNumber("D", 0.0);
@@ -255,10 +247,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // autoSelected = SmartDashboard.getString("Auto Selector",
-    // defaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
+
   }
 
   /**
@@ -266,15 +255,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    }
+    
   }
 
   /** 
