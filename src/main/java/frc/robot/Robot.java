@@ -232,6 +232,16 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("hatchPot", hatchPot.get());
     SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
     hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
+
+    updateButtons();
+    sdsLogic();
+    magicLogic();
+    drivingLogic();
+
+    elevatorLights();
+    elevatorLogic();
+    winchLogic();
+    hatchLogic();
   }
 
   /**
