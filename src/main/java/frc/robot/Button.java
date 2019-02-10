@@ -59,4 +59,9 @@ public class Button  {
 		changed = false;
 	}
 
+	public void toggleOff(){
+		reset();
+		update();
+	}
+
 }

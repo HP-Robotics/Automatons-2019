@@ -282,24 +282,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    aButton1.update();
-    bButton1.update();
-    xButton1.update();
-    yButton1.update();
-    trigger1.update();
-    thumb1.update();
-    aButton2.update();
-    bButton2.update();
-    xButton2.update();
-    yButton2.update();
-    trigger2.update();
-    thumb2.update();
-    hatchInButton1.update();
-    hatchOutButton1.update();
-    hatchInButton2.update();
-    hatchOutButton2.update();
-    hatchInOperator.update();
-    hatchOutOperator.update();
+   
+    updateButtons();
 
     if(operatorBox.getRawAxis(0)==1) {
       SmartDashboard.putBoolean("SDS In", true);
@@ -344,8 +328,7 @@ public class Robot extends TimedRobot {
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
       roller.set(ControlMode.PercentOutput, -0.33);
-      trigger2.reset();
-      trigger2.update();
+      trigger2.toggleOff();
       System.out.println("in");
       //lb.light(trigger1);
       //lb.unlight(thumb1);
@@ -354,8 +337,7 @@ public class Robot extends TimedRobot {
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
       roller.set(ControlMode.PercentOutput, 0.33);
-      trigger1.reset();
-      trigger1.update();
+      trigger1.toggleOff();
       System.out.println("out");
       //lb.light(thumb1);
       //lb.unlight(trigger1);
@@ -367,13 +349,15 @@ public class Robot extends TimedRobot {
       lb.unlight(thumb1);
       lb.unlight(trigger1);
     }
-    
+
     //Drive Train
     topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
     bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
 
+
+    //button box rocket/ship lights
     if(elevatorEnc.get() > HATCH_LEVEL1 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL1 + ENC_ERROR) {
       lb.light(hatch1);
       lb.light(shipHatch);
@@ -430,14 +414,18 @@ public class Robot extends TimedRobot {
       lb.unlight(shipHatch);
     }
 
-    // Elevator Garbage Fire
-    if(aButton1.held())
+    // Proto elevator Garbage Fire
+    if(aButton1.held()){
       elevator.set(ControlMode.PercentOutput, 0.4);
-    else if (bButton1.held())
+    }
+    else if (bButton1.held()){
       elevator.set(ControlMode.PercentOutput, -0.4);
-    else
+    }
+    else{
       elevator.set(ControlMode.PercentOutput, 0.0);
+    }
 
+    // Proto winch stuff
     if(xButton1.held()){
       winch.set(ControlMode.PercentOutput, 1.0);
     }
@@ -459,6 +447,9 @@ public class Robot extends TimedRobot {
     } else
         hatch.set(ControlMode.PercentOutput, 0.0);
     */
+
+
+    //proto hatch stuff
     if (hatchPot.get() >= 1500 && hatchPot.get() <= 3500) {
       if (hatchInButton1.held()) {
         if (!hatchController.isEnabled()) {
@@ -496,5 +487,25 @@ public class Robot extends TimedRobot {
   public void testPeriodic() {
   }
 
+  public void updateButtons(){
+    aButton1.update();
+    bButton1.update();
+    xButton1.update();
+    yButton1.update();
+    trigger1.update();
+    thumb1.update();
+    aButton2.update();
+    bButton2.update();
+    xButton2.update();
+    yButton2.update();
+    trigger2.update();
+    thumb2.update();
+    hatchInButton1.update();
+    hatchOutButton1.update();
+    hatchInButton2.update();
+    hatchOutButton2.update();
+    hatchInOperator.update();
+    hatchOutOperator.update();
+  }
  
 }
