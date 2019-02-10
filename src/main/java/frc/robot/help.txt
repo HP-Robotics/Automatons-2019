@@ -1,0 +1,7 @@
+PID tune elevator, hatch, winch
+Get all drivetrain coeeficients (ka, kv, pid things)
+Motion planning on hatch
+Test robot periodic
+Code brief mac and clean-up
+Button box python git
+Button box lighting class
