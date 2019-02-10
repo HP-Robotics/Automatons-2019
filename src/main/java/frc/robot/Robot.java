@@ -219,9 +219,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("D", 0.0);
     SmartDashboard.putNumber("setPoint", 0.0);
 
-    talonPIDOutput = new TalonPIDOutput(hatch);
-    winchPIDOutput = new TalonPIDOutput(winch);
-    elevatorPIDOutput = new TalonPIDOutput(elevator);
+    talonPIDOutput = new TalonPIDOutput(hatch, -1);
+    winchPIDOutput = new TalonPIDOutput(winch, -1);
+    elevatorPIDOutput = new TalonPIDOutput(elevator, -1);
 
     hatchController = new SnazzyPIDController(0, 0, 0, 0, hatchPot, talonPIDOutput, 0.05, "hatch.csv");
     winchController = new SnazzyPIDController(0, 0, 0, 0, winchEnc, winchPIDOutput, 0.05, "winch.csv" );
