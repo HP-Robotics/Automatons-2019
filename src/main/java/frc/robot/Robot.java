@@ -106,6 +106,8 @@ public class Robot extends TimedRobot {
   public Button sdsOut;
   public Button shipHatch;
   public Button shipCargo;
+  public Button hatchInOperator;
+  public Button hatchOutOperator;
  
   public double lVertAngle;
   public double rVertAngle;
@@ -164,17 +166,18 @@ public class Robot extends TimedRobot {
     hatchInButton2 = new Button(driverStick2, 9, "Hatch In");
     hatchOutButton2 = new Button(driverStick2, 10, "Hatch Out");
 
-    // resetButton = new Button(operatorBox, );
-    shipCargo = new Button(operatorBox, 2, "cargo ship cargo");
-    shipHatch = new Button(operatorBox, 3, "cargo ship hatch");
-    cargo3 = new Button(operatorBox, 4, "Cargo Level 3");
-    hatch3 = new Button(operatorBox, 5, "Hatch Level 2");
+    resetButton = new Button(operatorBox, 4, "Reset Button");
+    shipCargo = new Button(operatorBox, 11, "Cargo Ship Cargo");
+    shipHatch = new Button(operatorBox, 5, "Cargo Ship Hatch");
+    cargo3 = new Button(operatorBox, 12, "Cargo Level 3");
+    hatch3 = new Button(operatorBox, 10, "Hatch Level 3");
     cargo2 = new Button(operatorBox, 6, "Cargo Level 2");
-    hatch2 = new Button(operatorBox, 7, "Hatch Level 2");
-    cargo1 = new Button(operatorBox, 10, "Cargo Level 1");
-    hatch1 = new Button(operatorBox, 11, "Hatch Level 1");
-    sdsIn = new Button(operatorBox, 8, "SDS In");
-    sdsOut = new Button(operatorBox, 9, "SDS Out");
+    hatch2 = new Button(operatorBox, 9, "Hatch Level 2");
+    cargo1 = new Button(operatorBox, 3, "Cargo Level 1");
+    hatch1 = new Button(operatorBox, 8, "Hatch Level 1");
+    hatchInOperator = new Button(operatorBox, 2, "Hatch In");
+    hatchOutOperator = new Button(operatorBox, 1, "Hatch Out");
+    //sdsIn and sdsOut are actually joysticks, so is magic button
 
     lb = new LiteButton();
 
@@ -287,6 +290,30 @@ public class Robot extends TimedRobot {
     hatchOutButton1.update();
     hatchInButton2.update();
     hatchOutButton2.update();
+    hatchInOperator.update();
+    hatchOutOperator.update();
+
+    if(operatorBox.getRawAxis(0)==1) {
+      SmartDashboard.putBoolean("SDS In", true);
+      SmartDashboard.putBoolean("SDS Out", false);
+      // SDS CODE HERE
+    } else if (operatorBox.getRawAxis(0)==-1) {
+      SmartDashboard.putBoolean("SDS Out", true);
+      SmartDashboard.putBoolean("SDS In", false);
+      // MORE SDS CODE HERE
+    } else {
+      SmartDashboard.putBoolean("SDS Out", false);
+      SmartDashboard.putBoolean("SDS In", false);
+      // SDS OFF
+    }
+
+    if(operatorBox.getRawAxis(1)==-1) {
+      SmartDashboard.putBoolean("Magic Button", true);
+      //Magic code
+    } else {
+      SmartDashboard.putBoolean("Magic Button", false);
+      //Disable Magic Code
+    }
 
     /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
