@@ -266,27 +266,11 @@ public class Robot extends TimedRobot {
    
     updateButtons();
 
-    if(operatorBox.getRawAxis(0)==1) {
-      SmartDashboard.putBoolean("SDS In", true);
-      SmartDashboard.putBoolean("SDS Out", false);
-      // TODO SDS CODE HERE
-    } else if (operatorBox.getRawAxis(0)==-1) {
-      SmartDashboard.putBoolean("SDS Out", true);
-      SmartDashboard.putBoolean("SDS In", false);
-      // TODO MORE SDS CODE HERE
-    } else {
-      SmartDashboard.putBoolean("SDS Out", false);
-      SmartDashboard.putBoolean("SDS In", false);
-      // TODO SDS OFF
-    }
+    sdsLogic();
 
-    if(operatorBox.getRawAxis(1)==-1) {
-      SmartDashboard.putBoolean("Magic Button", true);
-      // TODO Magic code
-    } else {
-      SmartDashboard.putBoolean("Magic Button", false);
-      // TODO Disable Magic Code
-    }
+    magicLogic();
+
+    
 
     /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
     oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
@@ -304,6 +288,87 @@ public class Robot extends TimedRobot {
     yp = Math.sqrt(Math.pow(ldy,2)-Math.pow(((Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX))-CENTERX,2));
     heading = Math.atan(xp/yp);
     System.out.println("d: "+oVertAngle+", d0: "+ lVertAngle + ", d1: "+rVertAngle+", x': "+ xp +", y': "+yp+", heading: "+ heading);*/
+
+    //Drive Train
+    drivingLogic();
+
+
+    //button box rocket/ship lights
+    elevatorLights();
+    
+
+    // Proto elevator Garbage Fire
+    elevatorLogic();
+
+    // Proto winch stuff
+    winchLogic();
+    
+    /*if(hatchPot.get()>=1500 && hatchPot.get()<=3500) {
+      if(hatchInButton1.held() && hatchPot.get()<2690)
+        hatch.set(ControlMode.PercentOutput, -0.2);
+      else if (hatchOutButton1.held() && hatchPot.get()>=2600)
+        hatch.set(ControlMode.PercentOutput, 0.2);
+      else
+        hatch.set(ControlMode.PercentOutput, 0.0);
+    } else
+        hatch.set(ControlMode.PercentOutput, 0.0);
+    */
+
+
+    //proto hatch stuff
+    hatchLogic();
+
+    //SmartDashboard.putNumber("left enc", driveLeft.get());
+    //SmartDashboard.putNumber("right enc", driveRight.get());
+
+   //SmartDashboard.putNumber("winch", winch.get());
+    //SmartDashboard.putNumber("hatch latch", hatchPot.get());
+
+  }
+
+
+  /**
+   * This function is called periodically during test mode.
+   */
+  @Override
+  public void testPeriodic() {
+  }
+
+  public void updateButtons(){
+    aButton1.update();
+    bButton1.update();
+    xButton1.update();
+    yButton1.update();
+    trigger1.update();
+    thumb1.update();
+    aButton2.update();
+    bButton2.update();
+    xButton2.update();
+    yButton2.update();
+    trigger2.update();
+    thumb2.update();
+    hatchInButton1.update();
+    hatchOutButton1.update();
+    hatchInButton2.update();
+    hatchOutButton2.update();
+    hatchInOperator.update();
+    hatchOutOperator.update();
+  }
+ 
+  public void sdsLogic(){
+    if(operatorBox.getRawAxis(0)==1) {
+      SmartDashboard.putBoolean("SDS In", true);
+      SmartDashboard.putBoolean("SDS Out", false);
+      // TODO SDS CODE HERE
+    } else if (operatorBox.getRawAxis(0)==-1) {
+      SmartDashboard.putBoolean("SDS Out", true);
+      SmartDashboard.putBoolean("SDS In", false);
+      // TODO MORE SDS CODE HERE
+    } else {
+      SmartDashboard.putBoolean("SDS Out", false);
+      SmartDashboard.putBoolean("SDS In", false);
+      // TODO SDS OFF
+    }
 
     if(trigger1.on()){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
@@ -330,15 +395,26 @@ public class Robot extends TimedRobot {
       lb.unlight(thumb1);
       lb.unlight(trigger1);
     }
+  }
 
-    //Drive Train
+  public void magicLogic(){
+    if(operatorBox.getRawAxis(1)==-1) {
+      SmartDashboard.putBoolean("Magic Button", true);
+      // TODO Magic code
+    } else {
+      SmartDashboard.putBoolean("Magic Button", false);
+      // TODO Disable Magic Code
+    }
+  }
+
+  public void drivingLogic(){
     topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
     bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+  }
 
-
-    //button box rocket/ship lights
+  public void elevatorLights(){
     if(elevatorEnc.get() > HATCH_LEVEL1 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL1 + ENC_ERROR) {
       lb.light(hatch1);
       lb.light(shipHatch);
@@ -394,8 +470,9 @@ public class Robot extends TimedRobot {
       lb.unlight(hatch3);
       lb.unlight(shipHatch);
     }
+  }
 
-    // Proto elevator Garbage Fire
+  public void elevatorLogic(){
     if(aButton1.held()){
       elevator.set(ControlMode.PercentOutput, 0.4);
     }
@@ -405,8 +482,9 @@ public class Robot extends TimedRobot {
     else{
       elevator.set(ControlMode.PercentOutput, 0.0);
     }
+  }
 
-    // Proto winch stuff
+  public void winchLogic(){
     if(xButton1.held()){
       winch.set(ControlMode.PercentOutput, 1.0);
     }
@@ -416,20 +494,9 @@ public class Robot extends TimedRobot {
     else{
       winch.set(ControlMode.PercentOutput, 0.0);
     }
-    
-    /*if(hatchPot.get()>=1500 && hatchPot.get()<=3500) {
-      if(hatchInButton1.held() && hatchPot.get()<2690)
-        hatch.set(ControlMode.PercentOutput, -0.2);
-      else if (hatchOutButton1.held() && hatchPot.get()>=2600)
-        hatch.set(ControlMode.PercentOutput, 0.2);
-      else
-        hatch.set(ControlMode.PercentOutput, 0.0);
-    } else
-        hatch.set(ControlMode.PercentOutput, 0.0);
-    */
+  }
 
-
-    //proto hatch stuff
+  public void hatchLogic(){
     if (hatchPot.get() >= 1500 && hatchPot.get() <= 3500) {
       if (hatchInButton1.held()) {
         if (!hatchController.isEnabled()) {
@@ -449,43 +516,6 @@ public class Robot extends TimedRobot {
     }else{
       hatchController.disable();
     }
+  
   }
-
-    //SmartDashboard.putNumber("left enc", driveLeft.get());
-    //SmartDashboard.putNumber("right enc", driveRight.get());
-
-   //SmartDashboard.putNumber("winch", winch.get());
-    //SmartDashboard.putNumber("hatch latch", hatchPot.get());
-
-    
-
-
-  /**
-   * This function is called periodically during test mode.
-   */
-  @Override
-  public void testPeriodic() {
-  }
-
-  public void updateButtons(){
-    aButton1.update();
-    bButton1.update();
-    xButton1.update();
-    yButton1.update();
-    trigger1.update();
-    thumb1.update();
-    aButton2.update();
-    bButton2.update();
-    xButton2.update();
-    yButton2.update();
-    trigger2.update();
-    thumb2.update();
-    hatchInButton1.update();
-    hatchOutButton1.update();
-    hatchInButton2.update();
-    hatchOutButton2.update();
-    hatchInOperator.update();
-    hatchOutOperator.update();
-  }
- 
 }
