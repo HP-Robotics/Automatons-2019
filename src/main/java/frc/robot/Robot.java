@@ -269,23 +269,23 @@ public class Robot extends TimedRobot {
     if(operatorBox.getRawAxis(0)==1) {
       SmartDashboard.putBoolean("SDS In", true);
       SmartDashboard.putBoolean("SDS Out", false);
-      // SDS CODE HERE
+      // TODO SDS CODE HERE
     } else if (operatorBox.getRawAxis(0)==-1) {
       SmartDashboard.putBoolean("SDS Out", true);
       SmartDashboard.putBoolean("SDS In", false);
-      // MORE SDS CODE HERE
+      // TODO MORE SDS CODE HERE
     } else {
       SmartDashboard.putBoolean("SDS Out", false);
       SmartDashboard.putBoolean("SDS In", false);
-      // SDS OFF
+      // TODO SDS OFF
     }
 
     if(operatorBox.getRawAxis(1)==-1) {
       SmartDashboard.putBoolean("Magic Button", true);
-      //Magic code
+      // TODO Magic code
     } else {
       SmartDashboard.putBoolean("Magic Button", false);
-      //Disable Magic Code
+      // TODO Disable Magic Code
     }
 
     /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
@@ -412,8 +412,7 @@ public class Robot extends TimedRobot {
     }
     else if (yButton1.held()){
       winch.set(ControlMode.PercentOutput, -1.0);
-    }
-      
+    }  
     else{
       winch.set(ControlMode.PercentOutput, 0.0);
     }
