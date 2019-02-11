@@ -228,15 +228,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    SmartDashboard.putNumber("hatchPot", hatchPot.get());
-    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
-    hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
-
+    dashboardPuts();
     updateButtons();
     sdsLogic();
     magicLogic();
     drivingLogic();
-
     elevatorLights();
     elevatorLogic();
     winchLogic();
@@ -526,5 +522,11 @@ public class Robot extends TimedRobot {
       hatchController.disable();
     }
   
+  }
+
+  public void dashboardPuts(){
+    SmartDashboard.putNumber("hatchPot", hatchPot.get());
+    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
+    hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
   }
 }
