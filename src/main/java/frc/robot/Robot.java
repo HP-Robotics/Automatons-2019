@@ -105,6 +105,8 @@ public class Robot extends TimedRobot {
   public Button shipCargo;
   public Button hatchInOperator;
   public Button hatchOutOperator;
+
+  public ButtonGrouper elevatorButtons;
  
   public double lVertAngle;
   public double rVertAngle;
@@ -119,6 +121,7 @@ public class Robot extends TimedRobot {
   public double heading;
 
   public LiteButton lb;
+  public Button[] elevatorButtonArray;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -176,7 +179,10 @@ public class Robot extends TimedRobot {
     hatchOutOperator = new Button(operatorBox, 1, "Hatch Out");
     //sdsIn and sdsOut are actually joysticks, so is magic button
 
+
     lb = new LiteButton();
+    Button[] elevatorButtonArray =  {cargo3, cargo2, cargo1, hatch3, hatch2, hatch1, shipCargo, shipHatch};
+    elevatorButtons = new ButtonGrouper(elevatorButtonArray, lb);
 
     topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
@@ -228,7 +234,16 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+<<<<<<< HEAD
     dashboardPuts();
+=======
+    SmartDashboard.putNumber("hatchPot", hatchPot.get());
+    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
+    hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
+
+    elevatorButtons.update();
+
+>>>>>>> 173abf680d5e871b0908c4465e3ccb0b89eaaa15
     updateButtons();
     sdsLogic();
     magicLogic();
@@ -420,61 +435,61 @@ public class Robot extends TimedRobot {
   }
 
   public void elevatorLights(){
-    if(elevatorEnc.get() > HATCH_LEVEL1 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL1 + ENC_ERROR) {
-      lb.light(hatch1);
-      lb.light(shipHatch);
-      lb.unlight(cargo1);
-      lb.unlight(cargo2);
-      lb.unlight(cargo3);
-      lb.unlight(hatch2);
-      lb.unlight(hatch3);
-      lb.unlight(shipCargo);
-    } else if(elevatorEnc.get() > HATCH_LEVEL2 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL2 + ENC_ERROR) {
-      lb.light(hatch2);
-      lb.unlight(shipHatch);
-      lb.unlight(cargo1);
-      lb.unlight(cargo2);
-      lb.unlight(cargo3);
-      lb.unlight(hatch1);
-      lb.unlight(hatch3);
-      lb.unlight(shipCargo);
-    } else if(elevatorEnc.get() > HATCH_LEVEL3 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL3 + ENC_ERROR) {
-      lb.light(hatch3);
-      lb.unlight(shipHatch);
-      lb.unlight(cargo1);
-      lb.unlight(cargo2);
-      lb.unlight(cargo3);
-      lb.unlight(hatch1);
-      lb.unlight(hatch2);
-      lb.unlight(shipCargo);
-    } else if(elevatorEnc.get() > CARGO_LEVEL1 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL1 + ENC_ERROR) {
-      lb.light(cargo1);
-      lb.light(shipCargo);
-      lb.unlight(cargo2);
-      lb.unlight(cargo3);
-      lb.unlight(hatch1);
-      lb.unlight(hatch2);
-      lb.unlight(hatch3);
-      lb.unlight(shipHatch);
-    } else if(elevatorEnc.get() > CARGO_LEVEL2 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL2 + ENC_ERROR) {
-      lb.light(cargo2);
-      lb.unlight(shipCargo);
-      lb.unlight(cargo1);
-      lb.unlight(cargo3);
-      lb.unlight(hatch1);
-      lb.unlight(hatch2);
-      lb.unlight(hatch3);
-      lb.unlight(shipHatch);
-    } else if(elevatorEnc.get() > CARGO_LEVEL3 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL3 + ENC_ERROR) {
-      lb.light(cargo3);
-      lb.unlight(shipCargo);
-      lb.unlight(cargo1);
-      lb.unlight(cargo2);
-      lb.unlight(hatch1);
-      lb.unlight(hatch2);
-      lb.unlight(hatch3);
-      lb.unlight(shipHatch);
-    }
+    // if(elevatorEnc.get() > HATCH_LEVEL1 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL1 + ENC_ERROR) {
+    //   lb.light(hatch1);
+    //   lb.light(shipHatch);
+    //   lb.unlight(cargo1);
+    //   lb.unlight(cargo2);
+    //   lb.unlight(cargo3);
+    //   lb.unlight(hatch2);
+    //   lb.unlight(hatch3);
+    //   lb.unlight(shipCargo);
+    // } else if(elevatorEnc.get() > HATCH_LEVEL2 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL2 + ENC_ERROR) {
+    //   lb.light(hatch2);
+    //   lb.unlight(shipHatch);
+    //   lb.unlight(cargo1);
+    //   lb.unlight(cargo2);
+    //   lb.unlight(cargo3);
+    //   lb.unlight(hatch1);
+    //   lb.unlight(hatch3);
+    //   lb.unlight(shipCargo);
+    // } else if(elevatorEnc.get() > HATCH_LEVEL3 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL3 + ENC_ERROR) {
+    //   lb.light(hatch3);
+    //   lb.unlight(shipHatch);
+    //   lb.unlight(cargo1);
+    //   lb.unlight(cargo2);
+    //   lb.unlight(cargo3);
+    //   lb.unlight(hatch1);
+    //   lb.unlight(hatch2);
+    //   lb.unlight(shipCargo);
+    // } else if(elevatorEnc.get() > CARGO_LEVEL1 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL1 + ENC_ERROR) {
+    //   lb.light(cargo1);
+    //   lb.light(shipCargo);
+    //   lb.unlight(cargo2);
+    //   lb.unlight(cargo3);
+    //   lb.unlight(hatch1);
+    //   lb.unlight(hatch2);
+    //   lb.unlight(hatch3);
+    //   lb.unlight(shipHatch);
+    // } else if(elevatorEnc.get() > CARGO_LEVEL2 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL2 + ENC_ERROR) {
+    //   lb.light(cargo2);
+    //   lb.unlight(shipCargo);
+    //   lb.unlight(cargo1);
+    //   lb.unlight(cargo3);
+    //   lb.unlight(hatch1);
+    //   lb.unlight(hatch2);
+    //   lb.unlight(hatch3);
+    //   lb.unlight(shipHatch);
+    // } else if(elevatorEnc.get() > CARGO_LEVEL3 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL3 + ENC_ERROR) {
+    //   lb.light(cargo3);
+    //   lb.unlight(shipCargo);
+    //   lb.unlight(cargo1);
+    //   lb.unlight(cargo2);
+    //   lb.unlight(hatch1);
+    //   lb.unlight(hatch2);
+    //   lb.unlight(hatch3);
+    //   lb.unlight(shipHatch);
+    // }
   }
 
   public void elevatorLogic(){
