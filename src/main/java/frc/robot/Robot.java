@@ -234,16 +234,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-<<<<<<< HEAD
     dashboardPuts();
-=======
-    SmartDashboard.putNumber("hatchPot", hatchPot.get());
-    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
-    hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
-
-    elevatorButtons.update();
-
->>>>>>> 173abf680d5e871b0908c4465e3ccb0b89eaaa15
     updateButtons();
     sdsLogic();
     magicLogic();
