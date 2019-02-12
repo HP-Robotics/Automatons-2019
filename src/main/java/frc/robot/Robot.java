@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
 
   public SnazzyMotionPlanner hatchController;
-  public TalonPIDOutput talonPIDOutput;
+  public TalonPIDOutput hatchPIDOutput;
   public SnazzyPIDController winchController;
   public TalonPIDOutput winchPIDOutput;
   public SnazzyPIDController elevatorController;
@@ -48,6 +48,8 @@ public class Robot extends TimedRobot {
 
   public static final double hatchkA = 0.0000501017;
   public static final double hatchkV = 0.000634177;
+  public static final double hatchP = 0.005;
+  public static final double hatchI = 0.00005;
 
   public boolean calibrating = false;
   public boolean pidTuning = false;
@@ -224,11 +226,11 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("D", 0.0);
     SmartDashboard.putNumber("setPoint", 0.0);
 
-    talonPIDOutput = new TalonPIDOutput(hatch, 1.0);
+    hatchPIDOutput = new TalonPIDOutput(hatch, 1.0);
     winchPIDOutput = new TalonPIDOutput(winch, -1);
     elevatorPIDOutput = new TalonPIDOutput(elevator, -1);
 
-    hatchController = new SnazzyMotionPlanner(0.005, 0.00005, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, talonPIDOutput, 0.001, "calibrate.csv", this);
+    hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.001, "calibrate.csv", this);
     winchController = new SnazzyPIDController(0, 0, 0, 0, winchEnc, winchPIDOutput, 0.05, "winch.csv" );
     elevatorController = new SnazzyPIDController(0, 0, 0, 0, elevatorEnc, elevatorPIDOutput, 0.05, "elevator.csv");
   }
