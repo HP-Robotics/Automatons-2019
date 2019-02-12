@@ -367,6 +367,10 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 		return (currentHV-prevHV)/t;
 	}
 	
+	public boolean getCalibrate() {
+		return m_calibrating;
+	}
+	
 	private class PIDTask extends TimerTask {
 
 		@Override

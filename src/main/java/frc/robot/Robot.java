@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Robot extends TimedRobot {
 
-  public SnazzyPIDController hatchController;
+  public SnazzyMotionPlanner hatchController;
   public TalonPIDOutput talonPIDOutput;
   public SnazzyPIDController winchController;
   public TalonPIDOutput winchPIDOutput;
@@ -46,6 +46,11 @@ public class Robot extends TimedRobot {
   public static final int CARGO_LEVEL2 = 5120;
   public static final int CARGO_LEVEL3 = 7168;
 
+  public static final double hatchkA = 0.0000501017;
+  public static final double hatchkV = 0.000634177;
+
+  public boolean calibrating = false;
+  public boolean pidTuning = false;
 
   public TalonSRX topRight;
   public TalonSRX topLeft;
@@ -88,6 +93,7 @@ public class Robot extends TimedRobot {
   public Button hatchOutButton1;
   public Button hatchInButton2;
   public Button hatchOutButton2;
+  public Button calibrateButton;
 
   public Button resetButton;
   public Button magicButton;
@@ -160,6 +166,8 @@ public class Robot extends TimedRobot {
     trigger2 = new Button(driverStick2, 1, "SDS In");
     thumb2 = new Button(driverStick2, 2, "SDS Out");
 
+    calibrateButton = new Button(driverStick1, 14, "Lib Owned");
+
     hatchInButton1 = new Button(driverStick1, 9, "Hatch In");
     hatchOutButton1 = new Button(driverStick1, 10, "Hatch Out");
 
@@ -216,11 +224,11 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("D", 0.0);
     SmartDashboard.putNumber("setPoint", 0.0);
 
-    talonPIDOutput = new TalonPIDOutput(hatch, -1);
+    talonPIDOutput = new TalonPIDOutput(hatch, 1.0);
     winchPIDOutput = new TalonPIDOutput(winch, -1);
     elevatorPIDOutput = new TalonPIDOutput(elevator, -1);
 
-    hatchController = new SnazzyPIDController(0, 0, 0, 0, hatchPot, talonPIDOutput, 0.05, "hatch.csv");
+    hatchController = new SnazzyMotionPlanner(0.005, 0.00005, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, talonPIDOutput, 0.001, "calibrate.csv", this);
     winchController = new SnazzyPIDController(0, 0, 0, 0, winchEnc, winchPIDOutput, 0.05, "winch.csv" );
     elevatorController = new SnazzyPIDController(0, 0, 0, 0, elevatorEnc, elevatorPIDOutput, 0.05, "elevator.csv");
   }
@@ -234,15 +242,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    dashboardPuts();
-    updateButtons();
-    sdsLogic();
-    magicLogic();
-    drivingLogic();
-    elevatorLights();
-    elevatorLogic();
-    winchLogic();
-    hatchLogic();
+    
   }
 
   /**
@@ -274,67 +274,23 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-   
+    dashboardPuts();
     updateButtons();
-
+    if(calibrating) {
+      calibrateNow();
+      return;
+    }
+    if(pidTuning) {
+      pidTuneNow();
+      return;
+    }
     sdsLogic();
-
     magicLogic();
-
-    
-
-    /*horzAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx").getDouble(0);
-    oVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty").getDouble(0);
-    lVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty0").getDouble(0)*27;
-    rVertAngle = NetworkTableInstance.getDefault().getTable("limelight").getEntry("ty1").getDouble(0)*27;
-
-    ody = distanceCalc(oVertAngle);
-    ldy = distanceCalc(lVertAngle);
-    rdy = distanceCalc(rVertAngle);
-
-    dx = ody*Math.tan(Math.toRadians(horzAngle));
-    //System.out.println("x: "+ dx + ", y: " + ody + ", angle: " + horzAngle );
-    
-    xp = (Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX);
-    yp = Math.sqrt(Math.pow(ldy,2)-Math.pow(((Math.pow(rdy,2)-Math.pow(ldy,2))/(4*CENTERX))-CENTERX,2));
-    heading = Math.atan(xp/yp);
-    System.out.println("d: "+oVertAngle+", d0: "+ lVertAngle + ", d1: "+rVertAngle+", x': "+ xp +", y': "+yp+", heading: "+ heading);*/
-
-    //Drive Train
     drivingLogic();
-
-
-    //button box rocket/ship lights
     elevatorLights();
-    
-
-    // Proto elevator Garbage Fire
     elevatorLogic();
-
-    // Proto winch stuff
     winchLogic();
-    
-    /*if(hatchPot.get()>=1500 && hatchPot.get()<=3500) {
-      if(hatchInButton1.held() && hatchPot.get()<2690)
-        hatch.set(ControlMode.PercentOutput, -0.2);
-      else if (hatchOutButton1.held() && hatchPot.get()>=2600)
-        hatch.set(ControlMode.PercentOutput, 0.2);
-      else
-        hatch.set(ControlMode.PercentOutput, 0.0);
-    } else
-        hatch.set(ControlMode.PercentOutput, 0.0);
-    */
-
-
-    //proto hatch stuff
     hatchLogic();
-
-    //SmartDashboard.putNumber("left enc", driveLeft.get());
-    //SmartDashboard.putNumber("right enc", driveRight.get());
-
-   //SmartDashboard.putNumber("winch", winch.get());
-    //SmartDashboard.putNumber("hatch latch", hatchPot.get());
-
   }
 
 
@@ -364,6 +320,7 @@ public class Robot extends TimedRobot {
     hatchOutButton2.update();
     hatchInOperator.update();
     hatchOutOperator.update();
+    calibrateButton.update();
   }
  
   public void sdsLogic(){
@@ -535,4 +492,41 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
     hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
   }
+  public void calibrateNow() {
+		if(calibrateButton.on()){
+			if(calibrateButton.changed()) {
+				hatchController.startCalibration();
+				
+				hatchController.enable();
+				
+			}
+			
+		}else if (calibrateButton.changed()&& !calibrateButton.on())
+			hatchController.disable();
+		
+  }
+  
+  public void pidTuneNow() {
+      hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
+      
+      if(calibrateButton.on()){
+          if(calibrateButton.changed()) {
+            hatchController.configureGoal(SmartDashboard.getNumber("setPoint", 0), 100, 100, true);
+            hatchController.enable();
+            System.out.println("enable");
+          }
+          
+        }else if (calibrateButton.changed()&& !calibrateButton.on()){
+          hatchController.disable();
+          System.out.println("DISABLE");
+      }
+
+      if (hatchPot.get() <= 1500 && hatchPot.get() >= 3500) {
+        hatchController.disable();
+        System.out.println("DISABLE");
+      }
+    }
+	
+	
+
 }
