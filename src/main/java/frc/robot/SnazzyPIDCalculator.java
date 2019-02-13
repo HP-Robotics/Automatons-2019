@@ -680,9 +680,9 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
 		m_result = 0;
 	}
     m_enabled = true;
+    System.out.println(Timer.getFPGATimestamp()+"Jeremy not crazy");
     m_log.open(m_file, "Timestamp, Input, Error, Accumulated Error, Calculated Output, P: " + m_P + ", I: " + m_I +  ", D: " + m_D + ", F: " + m_F +", TF, Heading, Gyro"+", Setpoint\n");
     m_log.reset();
-    
     if (m_table != null) {
       m_table.putBoolean("enabled", true);
     }
@@ -713,7 +713,7 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
   /**
    * Return true if PIDController is enabled.
    */
-  public boolean isEnabled() {
+  public synchronized boolean isEnabled() {
     return m_enabled;
   }
 

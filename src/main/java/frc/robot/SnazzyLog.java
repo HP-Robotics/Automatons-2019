@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import edu.wpi.first.wpilibj.Timer;
+
 public class SnazzyLog {
 	File m_f;
 	FileWriter m_fw;
@@ -16,6 +18,7 @@ public class SnazzyLog {
 	boolean m_open = false;
 
 	public boolean open(String file, String header) {
+		System.out.println(Timer.getFPGATimestamp()+"artrdtryf");
 		if (file == null) {
 			return false;
 		}
@@ -30,7 +33,6 @@ public class SnazzyLog {
 			} else {
 				m_f = new File("/tmp/" + file);
 			}
-
 			if(!m_f.exists()) {
 				m_f.createNewFile();
 			}
@@ -40,14 +42,12 @@ public class SnazzyLog {
 			e.printStackTrace();
 			return false;
 		}
-
 		m_bw = new BufferedWriter(m_fw);
 		m_open = true;
 
 		if(m_header != null) {
 			return write(header);
 		}
-
 		return true;
 	}
 

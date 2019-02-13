@@ -58,7 +58,7 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 			double period, String fname, Robot robot) {
 		super(Kp, Ki, Kd, Kf, source, output, period, fname);
 		m_controlLoop = new java.util.Timer();
-		m_controlLoop.schedule(new PIDTask(), 0L, (long) (period * 1000));
+		m_controlLoop.schedule(new PIDTask(), 1L, (long) (period * 1000));
 		m_calLog = new SnazzyLog();
 		m_kA = kA;
 		m_kV = kV;

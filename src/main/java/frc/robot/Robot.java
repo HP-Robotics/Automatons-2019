@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.interfaces.Potentiometer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,10 +30,16 @@ public class Robot extends TimedRobot {
 
   public SnazzyMotionPlanner hatchController;
   public TalonPIDOutput talonPIDOutput;
-  public SnazzyPIDController winchController;
+  public SnazzyMotionPlanner winchController;
   public TalonPIDOutput winchPIDOutput;
-  public SnazzyPIDController elevatorController;
+  public SnazzyMotionPlanner elevatorController;
   public TalonPIDOutput elevatorPIDOutput;
+  public SnazzyMotionPlanner leftController;
+  public SnazzyMotionPlanner rightController;
+  public DrivePIDOutput rightPIDOutput;
+  public DrivePIDOutput leftPIDOutput;
+  public DrivePIDSourceInches leftInInches;
+  public DrivePIDSourceInches rightInInches;
 
   public static final int DRIVER_STICK1 = 0;
   public static final int DRIVER_STICK2 = 1;
@@ -46,19 +53,29 @@ public class Robot extends TimedRobot {
   public static final int CARGO_LEVEL2 = 5120;
   public static final int CARGO_LEVEL3 = 7168;
 
+  final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
+	final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
+	
+
   public static final double hatchkA = 0.0000501017;
   public static final double hatchkV = 0.000634177;
 
+  public static final double elevatorkA = 0.000095086;
+  public static final double elevatorkV = 0.00183371;
+
+  public static final double drivekV = 0.0168578;
+  public static final double driveKA = 0.00000007211;
+
   public boolean calibrating = false;
-  public boolean pidTuning = false;
+  public boolean pidTuning = true;
 
   public TalonSRX topRight;
   public TalonSRX topLeft;
   public TalonSRX bottomRight;
   public TalonSRX bottomLeft;
 
-  public Encoder driveLeft;
-  public Encoder driveRight;
+  public Encoder driveLeftEnc;
+  public Encoder driveRightEnc;
   public Encoder elevatorEnc;
   public Encoder winchEnc;
 
@@ -129,12 +146,25 @@ public class Robot extends TimedRobot {
   public LiteButton lb;
   public Button[] elevatorButtonArray;
 
+  double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
+  double[][] racetrackTurnPlan = {{60, 0, 0}, {60,0,0}, {120, -60, -90}, {60, -120, -180}};
+  
+  TrajectoryPlanner racetrackStartTraj;
+  TrajectoryPlanner racetrackTurnTraj;
+
   /**
    * This function is run when the robot is first started up and should be
    * used for any initialization code.
    */
   @Override
   public void robotInit() {
+
+    
+		racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
+    racetrackStartTraj.generate();
+    racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
+		racetrackTurnTraj.generate();
+
     driverStick1 = new Joystick(DRIVER_STICK1);
     driverStick2 = new Joystick(DRIVER_STICK2);
     operatorBox = new Joystick(OPERATOR_BOX);
@@ -197,10 +227,10 @@ public class Robot extends TimedRobot {
     topRight = new TalonSRX(12);
     bottomRight = new TalonSRX(13);
 
-    driveRight = new Encoder(10,11, false, EncodingType.k4X);
-    driveLeft = new Encoder(12,13, true, EncodingType.k4X);
-    elevatorEnc = new Encoder(0,1, false, EncodingType.k4X);
-    winchEnc = new Encoder(14,15,false, EncodingType.k4X);
+    driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
+    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);
+    elevatorEnc = new Encoder(8, 9, true, EncodingType.k4X);
+    winchEnc = new Encoder(21,22,true, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
     hatchPot = new AnalogPotentiometer(0, 10*360, 0); /* 2700 Max, 2610 Min */
@@ -212,11 +242,12 @@ public class Robot extends TimedRobot {
     //hatchPot = new AnalogPotentiometer(ai2, 360, 30);
     
 
+
     roller = new TalonSRX(30);
     leftSDS = new TalonSRX(21);
     rightSDS = new TalonSRX(22);
-    winch = new TalonSRX(10);
-    hatch = new TalonSRX(31);
+    winch = new TalonSRX(3);
+    //hatch = new TalonSRX(31);
     elevator = new TalonSRX(40);
 
     SmartDashboard.putNumber("P", 0.0);
@@ -225,12 +256,18 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("setPoint", 0.0);
 
     talonPIDOutput = new TalonPIDOutput(hatch, 1.0);
-    winchPIDOutput = new TalonPIDOutput(winch, -1);
+    winchPIDOutput = new TalonPIDOutput(winch, -1.0);
     elevatorPIDOutput = new TalonPIDOutput(elevator, -1);
+    rightPIDOutput = new DrivePIDOutput(topRight, bottomRight, -1.0); 
+    leftPIDOutput = new DrivePIDOutput(topLeft, bottomLeft, 1.0);
 
-    hatchController = new SnazzyMotionPlanner(0.005, 0.00005, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, talonPIDOutput, 0.001, "calibrate.csv", this);
-    winchController = new SnazzyPIDController(0, 0, 0, 0, winchEnc, winchPIDOutput, 0.05, "winch.csv" );
-    elevatorController = new SnazzyPIDController(0, 0, 0, 0, elevatorEnc, elevatorPIDOutput, 0.05, "elevator.csv");
+    leftInInches = new DrivePIDSourceInches(driveLeftEnc);
+    rightInInches = new DrivePIDSourceInches(driveRightEnc);
+    //hatchController = new SnazzyMotionPlanner(0.005, 0.00005, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, talonPIDOutput, 0.001, "calibrate.csv", this);
+    winchController = new SnazzyMotionPlanner(0, 0, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.001, "winch.csv", this);
+    elevatorController = new SnazzyMotionPlanner(0, 0, 0, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.005, "elevator.csv", this);
+    leftController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.005, "left.csv", this);
+    rightController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.005, "right.csv", this);
   }
   /**
    * This function is called every robot packet, no matter the mode. Use
@@ -268,29 +305,37 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {
     
   }
-
+  @Override
+  public void teleopInit() {
+    winchController.enable();
+    winchController.disable();
+    leftController.enable();
+    leftController.disable();
+    rightController.enable();
+    rightController.disable();
+  }
   /** 
    * This function is called periodically during operator control.
+   * 
    */
   @Override
   public void teleopPeriodic() {
     dashboardPuts();
     updateButtons();
     if(calibrating) {
-      calibrateNow();
+      calibrateNow(winchController);
       return;
     }
     if(pidTuning) {
-      pidTuneNow();
+      pidTuneNow(winchController);
       return;
     }
     sdsLogic();
     magicLogic();
     drivingLogic();
-    elevatorLights();
     elevatorLogic();
     winchLogic();
-    hatchLogic();
+    //hatchLogic();
   }
 
 
@@ -302,7 +347,7 @@ public class Robot extends TimedRobot {
   }
 
   public void updateButtons(){
-    aButton1.update();
+    /*aButton1.update();
     bButton1.update();
     xButton1.update();
     yButton1.update();
@@ -319,7 +364,7 @@ public class Robot extends TimedRobot {
     hatchInButton2.update();
     hatchOutButton2.update();
     hatchInOperator.update();
-    hatchOutOperator.update();
+    hatchOutOperator.update();*/
     calibrateButton.update();
   }
  
@@ -350,7 +395,7 @@ public class Robot extends TimedRobot {
     if(trigger2.on()){
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
-      roller.set(ControlMode.PercentOutput, 0.33);
+      roller.set(ControlMode.PercentOutput, 0.15);
       trigger1.toggleOff();
       System.out.println("out");
       //lb.light(thumb1);
@@ -378,66 +423,8 @@ public class Robot extends TimedRobot {
   public void drivingLogic(){
     topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
-    topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
-    bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
-  }
-
-  public void elevatorLights(){
-    // if(elevatorEnc.get() > HATCH_LEVEL1 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL1 + ENC_ERROR) {
-    //   lb.light(hatch1);
-    //   lb.light(shipHatch);
-    //   lb.unlight(cargo1);
-    //   lb.unlight(cargo2);
-    //   lb.unlight(cargo3);
-    //   lb.unlight(hatch2);
-    //   lb.unlight(hatch3);
-    //   lb.unlight(shipCargo);
-    // } else if(elevatorEnc.get() > HATCH_LEVEL2 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL2 + ENC_ERROR) {
-    //   lb.light(hatch2);
-    //   lb.unlight(shipHatch);
-    //   lb.unlight(cargo1);
-    //   lb.unlight(cargo2);
-    //   lb.unlight(cargo3);
-    //   lb.unlight(hatch1);
-    //   lb.unlight(hatch3);
-    //   lb.unlight(shipCargo);
-    // } else if(elevatorEnc.get() > HATCH_LEVEL3 - ENC_ERROR && elevatorEnc.get() < HATCH_LEVEL3 + ENC_ERROR) {
-    //   lb.light(hatch3);
-    //   lb.unlight(shipHatch);
-    //   lb.unlight(cargo1);
-    //   lb.unlight(cargo2);
-    //   lb.unlight(cargo3);
-    //   lb.unlight(hatch1);
-    //   lb.unlight(hatch2);
-    //   lb.unlight(shipCargo);
-    // } else if(elevatorEnc.get() > CARGO_LEVEL1 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL1 + ENC_ERROR) {
-    //   lb.light(cargo1);
-    //   lb.light(shipCargo);
-    //   lb.unlight(cargo2);
-    //   lb.unlight(cargo3);
-    //   lb.unlight(hatch1);
-    //   lb.unlight(hatch2);
-    //   lb.unlight(hatch3);
-    //   lb.unlight(shipHatch);
-    // } else if(elevatorEnc.get() > CARGO_LEVEL2 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL2 + ENC_ERROR) {
-    //   lb.light(cargo2);
-    //   lb.unlight(shipCargo);
-    //   lb.unlight(cargo1);
-    //   lb.unlight(cargo3);
-    //   lb.unlight(hatch1);
-    //   lb.unlight(hatch2);
-    //   lb.unlight(hatch3);
-    //   lb.unlight(shipHatch);
-    // } else if(elevatorEnc.get() > CARGO_LEVEL3 - ENC_ERROR && elevatorEnc.get() < CARGO_LEVEL3 + ENC_ERROR) {
-    //   lb.light(cargo3);
-    //   lb.unlight(shipCargo);
-    //   lb.unlight(cargo1);
-    //   lb.unlight(cargo2);
-    //   lb.unlight(hatch1);
-    //   lb.unlight(hatch2);
-    //   lb.unlight(hatch3);
-    //   lb.unlight(shipHatch);
-    // }
+    topRight.set(ControlMode.PercentOutput, driverStick1.getRawAxis(1));
+    bottomRight.set(ControlMode.PercentOutput, driverStick1.getRawAxis(1));
   }
 
   public void elevatorLogic(){
@@ -454,10 +441,11 @@ public class Robot extends TimedRobot {
 
   public void winchLogic(){
     if(xButton1.held()){
-      winch.set(ControlMode.PercentOutput, 1.0);
+      winch.set(ControlMode.PercentOutput, 0.3);
+      System.out.println("nhdjkwhdefe");
     }
     else if (yButton1.held()){
-      winch.set(ControlMode.PercentOutput, -1.0);
+      winch.set(ControlMode.PercentOutput, -0.3);
     }  
     else{
       winch.set(ControlMode.PercentOutput, 0.0);
@@ -489,42 +477,57 @@ public class Robot extends TimedRobot {
 
   public void dashboardPuts(){
     SmartDashboard.putNumber("hatchPot", hatchPot.get());
-    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
-    hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
+    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.getRaw());
+    SmartDashboard.putNumber("winchEnc", winchEnc.getRaw());
+    SmartDashboard.putNumber("left enc", driveLeftEnc.get());
+    SmartDashboard.putNumber("right enc", driveRightEnc.get());
+    SmartDashboard.putNumber("left in", leftInInches.pidGet());
+    SmartDashboard.putNumber("right in", rightInInches.pidGet());
   }
-  public void calibrateNow() {
-		if(calibrateButton.on()){
-			if(calibrateButton.changed()) {
-				hatchController.startCalibration();
+  public void calibrateNow(SnazzyMotionPlanner p) {
+    if(calibrateButton.changed()&& calibrateButton.on()){
+        driveRightEnc.reset();
+        driveLeftEnc.reset();
+        leftController.enable(); 
+        rightController.enable(); 
+        leftController.startCalibration();
+        rightController.startCalibration();
+        System.out.println("enabel");
 				
-				hatchController.enable();
-				
-			}
-			
-		}else if (calibrateButton.changed()&& !calibrateButton.on())
-			hatchController.disable();
-		
+    }else if (calibrateButton.changed()&& !calibrateButton.on()){
+      leftController.disable();
+      rightController.disable();
+      System.out.println("disabel");
+    }
+    //System.out.println(calibrateButton.changed()+" " +calibrateButton.on());
   }
   
-  public void pidTuneNow() {
-      hatchController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
-      
+  public void pidTuneNow(SnazzyMotionPlanner p) {
+      rightController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
+      leftController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
       if(calibrateButton.on()){
           if(calibrateButton.changed()) {
-            hatchController.configureGoal(SmartDashboard.getNumber("setPoint", 0), 100, 100, true);
-            hatchController.enable();
+            driveRightEnc.reset();
+            driveLeftEnc.reset();
+            rightController.configureGoal(SmartDashboard.getNumber("setPoint", 0), 50, 50, true);
+            leftController.configureGoal(SmartDashboard.getNumber("setPoint", 0), 50, 50, true);
+
+            rightController.enable();
+            leftController.enable();
             System.out.println("enable");
           }
           
         }else if (calibrateButton.changed()&& !calibrateButton.on()){
-          hatchController.disable();
+          rightController.disable();
+          leftController.disable();
           System.out.println("DISABLE");
       }
 
-      if (hatchPot.get() <= 1500 && hatchPot.get() >= 3500) {
-        hatchController.disable();
+      /*if (hatchPot.get() <= 1500 && hatchPot.get() >= 3500) {
+        rightController.disable();
+          leftController.disable();
         System.out.println("DISABLE");
-      }
+      }*/
     }
 	
 	
