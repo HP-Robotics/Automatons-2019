@@ -59,6 +59,8 @@ public class Robot extends TimedRobot {
 
   public static final double hatchkA = 0.0000501017;
   public static final double hatchkV = 0.000634177;
+  public static final double hatchP = 0.005;
+  public static final double hatchI = 0.00005;
 
   public static final double elevatorkA = 0.000095086;
   public static final double elevatorkV = 0.00183371;
@@ -147,10 +149,12 @@ public class Robot extends TimedRobot {
   public Button[] elevatorButtonArray;
 
   double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
-  double[][] racetrackTurnPlan = {{60, 0, 0}, {60,0,0}, {120, -60, -90}, {60, -120, -180}};
+  double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
+  double[][] shiftLeft = {{0, 0, 0},{24, 24, 0}};
   
   TrajectoryPlanner racetrackStartTraj;
   TrajectoryPlanner racetrackTurnTraj;
+  TrajectoryPlanner shiftLeftTraj;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -163,7 +167,9 @@ public class Robot extends TimedRobot {
 		racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
     racetrackStartTraj.generate();
     racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
-		racetrackTurnTraj.generate();
+    racetrackTurnTraj.generate();
+    shiftLeftTraj = new TrajectoryPlanner(shiftLeft, 50, 50, 50, "shiftLeft");
+    shiftLeftTraj.generate();
 
     driverStick1 = new Joystick(DRIVER_STICK1);
     driverStick2 = new Joystick(DRIVER_STICK2);
@@ -509,8 +515,8 @@ public class Robot extends TimedRobot {
           if(calibrateButton.changed()) {
             driveRightEnc.reset();
             driveLeftEnc.reset();
-            rightController.configureGoal(SmartDashboard.getNumber("setPoint", 0), 50, 50, true);
-            leftController.configureGoal(SmartDashboard.getNumber("setPoint", 0), 50, 50, true);
+            leftController.configureTrajectory(shiftLeftTraj.getLeftTrajectory(), false);
+		        rightController.configureTrajectory(shiftLeftTraj.getRightTrajectory(), false);
 
             rightController.enable();
             leftController.enable();
