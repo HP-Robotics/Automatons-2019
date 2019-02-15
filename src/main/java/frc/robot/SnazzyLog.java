@@ -18,7 +18,6 @@ public class SnazzyLog {
 	boolean m_open = false;
 
 	public boolean open(String file, String header) {
-		System.out.println(Timer.getFPGATimestamp()+"artrdtryf");
 		if (file == null) {
 			return false;
 		}
