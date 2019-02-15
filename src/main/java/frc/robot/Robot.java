@@ -30,7 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
 
   public SnazzyMotionPlanner hatchController;
-  public TalonPIDOutput talonPIDOutput;
+  public TalonPIDOutput hatchPIDOutput;
   public SnazzyMotionPlanner winchController;
   public TalonPIDOutput winchPIDOutput;
   public SnazzyMotionPlanner elevatorController;
@@ -64,16 +64,20 @@ public class Robot extends TimedRobot {
   
   public final static double elevator_max_a = 100;
   public final static double elevator_max_v = 100;
+
+  public static final double WINCH_DOWN_SETPOINT = 100;
+  public static final double WINCH_UP_SETPOINT = 100;
+  public boolean isUsingIntake;
 	
 
   /* public static final double hatchkA = 0.0000501017;
   public static final double hatchkV = 0.000634177;
   * OLD POT VALUES
   */
-  public static final double hatchkA = 0.000501017;
-  public static final double hatchkV = 0.00634177;
-  public static final double hatchP = 0.05;
-  public static final double hatchI = 0.0005;
+  public static final double hatchkA = 0;//0.000501017;
+  public static final double hatchkV = 0;//0.00634177;
+  public static final double hatchP = 0.01;
+  public static final double hatchI = 0.00001;
 
   public static final double elevatorkA = 0.000095086;
   public static final double elevatorkV = 0.00183371;
@@ -126,6 +130,8 @@ public class Robot extends TimedRobot {
   public Button hatchInButton2;
   public Button hatchOutButton2;
   public Button calibrateButton;
+  public Button winchToggleButton;
+
 
   public Button resetButton;
   public Button magicButton;
@@ -217,6 +223,9 @@ public class Robot extends TimedRobot {
 
     calibrateButton = new Button(driverStick1, 14, "Lib Owned");
 
+    winchToggleButton = new Button(driverStick1, 7, "Winch Toggle");
+    isUsingIntake = false;
+
     hatchInButton1 = new Button(driverStick1, 9, "Hatch In");
     hatchOutButton1 = new Button(driverStick1, 10, "Hatch Out");
 
@@ -232,8 +241,8 @@ public class Robot extends TimedRobot {
     hatch2 = new Button(operatorBox, 9, "Hatch Level 2");
     cargo1 = new Button(operatorBox, 3, "Cargo Level 1");
     hatch1 = new Button(operatorBox, 8, "Hatch Level 1");
-    hatchFeeder = new Button(operatorBox, 2, "Hatch In"); // change key
-    groundIntake = new Button(operatorBox, 1, "Hatch Out"); // change key
+    hatchFeeder = new Button(operatorBox, 2, "Hatch Feeder"); // change key
+    groundIntake = new Button(operatorBox, 1, "Ground Intake"); // change key
     //sdsIn and sdsOut are actually joysticks, so is magic button
 
 
@@ -248,7 +257,7 @@ public class Robot extends TimedRobot {
 
     driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
     driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);
-    elevatorEnc = new Encoder(8, 9, true, EncodingType.k4X);
+    elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X);
     winchEnc = new Encoder(21,22,true, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
@@ -274,7 +283,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("D", 0.0);
     SmartDashboard.putNumber("setPoint", 0.0);
 
-    talonPIDOutput = new TalonPIDOutput(hatch, 1.0);
+    hatchPIDOutput = new TalonPIDOutput(hatch, -1.0);
     winchPIDOutput = new TalonPIDOutput(winch, -1.0);
     elevatorPIDOutput = new TalonPIDOutput(elevator, -1);
     rightPIDOutput = new DrivePIDOutput(topRight, bottomRight, -1.0); 
@@ -282,7 +291,7 @@ public class Robot extends TimedRobot {
 
     leftInInches = new DrivePIDSourceInches(driveLeftEnc);
     rightInInches = new DrivePIDSourceInches(driveRightEnc);
-    hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, talonPIDOutput, 0.005, "hatch.csv", this);
+    hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.005, "hatch.csv", this);
   
     winchController = new SnazzyMotionPlanner(0, 0, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.001, "winch.csv", this);
     elevatorController = new SnazzyMotionPlanner(0, 0, 0, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.005, "elevator.csv", this);
@@ -328,8 +337,9 @@ public class Robot extends TimedRobot {
   }
   @Override
   public void teleopInit() {
-    elevatorController.configureGoal(0, elevator_max_v, elevator_max_a), true;
+    elevatorController.configureGoal(0, elevator_max_v, elevator_max_a, true);
   }
+    
   /** 
    * This function is called periodically during operator control.
    * 
@@ -346,11 +356,10 @@ public class Robot extends TimedRobot {
       pidTuneNow(winchController);
       return;
     }
-    sdsLogic();
+    intakeLogic();
     magicLogic();
     drivingLogic();
     elevatorLogic();
-    winchLogic();
     hatchLogic();
   }
 
@@ -379,12 +388,16 @@ public class Robot extends TimedRobot {
     hatchOutButton1.update();
     hatchInButton2.update();
     hatchOutButton2.update();
-    hatchInOperator.update();
-    hatchOutOperator.update();
+    //hatchInOperator.update();
+    //hatchOutOperator.update();
     calibrateButton.update();
   }
  
-  public void sdsLogic(){
+  public void intakeLogic(){
+
+    if (!winchController.isEnabled()){
+      winchController.enable();
+    }
 
     if(trigger1.on()||operatorBox.getRawAxis(0)==1){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
@@ -394,6 +407,8 @@ public class Robot extends TimedRobot {
       System.out.println("in");
       lb.light(trigger1);
       lb.unlight(thumb1);
+      winchController.configureGoal(WINCH_DOWN_SETPOINT, 100, 100, true);
+      isUsingIntake = true;
     }
     if(trigger2.on()||operatorBox.getRawAxis(0)==-1){
       leftSDS.set(ControlMode.PercentOutput, 1.0);
@@ -403,6 +418,8 @@ public class Robot extends TimedRobot {
       System.out.println("out");
       lb.light(thumb1);
       lb.unlight(trigger1);
+      winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
+      isUsingIntake = true;
     }
     if(!trigger1.on()&&!trigger2.on()&& operatorBox.getRawAxis(0)==0){
       leftSDS.set(ControlMode.PercentOutput, 0.0);
@@ -410,6 +427,14 @@ public class Robot extends TimedRobot {
       roller.set(ControlMode.PercentOutput, 0.0);
       lb.unlight(thumb1);
       lb.unlight(trigger1);
+      isUsingIntake = false;
+    }
+    if(!isUsingIntake && winchToggleButton.changed()){
+      if(winchController.getSetpoint() == WINCH_UP_SETPOINT){
+        winchController.configureGoal(WINCH_DOWN_SETPOINT, 100, 100, true);
+      }else{
+        winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
+      }
     }
   }
 
@@ -432,7 +457,9 @@ public class Robot extends TimedRobot {
 
   public void elevatorLogic(){
 
-    elevatorController.enable();
+    if (!elevatorController.isEnabled()){
+      elevatorController.enable();
+    }
     /*if(aButton1.held()){
       elevator.set(ControlMode.PercentOutput, 0.4);
     }
@@ -472,7 +499,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-  public void winchLogic(){
+  /*public void winchLogic(){
     if(xButton1.held()){
       winch.set(ControlMode.PercentOutput, 0.3);
     }
@@ -482,24 +509,20 @@ public class Robot extends TimedRobot {
     else{
       winch.set(ControlMode.PercentOutput, 0.0);
     }
-  }
+}*/
 
   public void hatchLogic(){
     if (hatchPot.get() >= HATCH_SAFE_TOP && hatchPot.get() <= HATCH_SAFE_BOTTOM) {
-      if (hatchInButton1.held()) {
-        if (!hatchController.isEnabled()) {
-          hatchController.enable();
-          hatchController.configureGoal(HATCH_UP-hatchPot.get(), 50, 50, true);
+      if(!hatchController.isEnabled()){
+        hatchController.enable();
+      }
+      if (!hatchInButton1.on() && hatchInButton1.changed()) {
+          hatchController.configureGoal(HATCH_UP-hatchPot.get(), 500, 500, true);
           System.out.println("Hatch is down");
         }
-      } else if (hatchOutButton1.held()) {
-        if (!hatchController.isEnabled()) {
-          hatchController.enable();
-          hatchController.configureGoal(HATCH_DOWN-hatchPot.get(), 50, 50, true);
+      else if (hatchInButton1.on() && hatchInButton1.changed()) {
+          hatchController.configureGoal(HATCH_DOWN-hatchPot.get(), 500, 500, true);
           System.out.println("Hatch is up");
-        }
-      } else if (hatchController.isEnabled()){
-        hatchController.disable();
       }
     }else{
       hatchController.disable();
@@ -509,8 +532,8 @@ public class Robot extends TimedRobot {
 
   public void dashboardPuts(){
     SmartDashboard.putNumber("hatchPot", hatchPot.get());
-    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.getRaw());
-    SmartDashboard.putNumber("winchEnc", winchEnc.getRaw());
+    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
+    SmartDashboard.putNumber("winchEnc", winchEnc.get());
     SmartDashboard.putNumber("left enc", driveLeftEnc.get());
     SmartDashboard.putNumber("right enc", driveRightEnc.get());
     SmartDashboard.putNumber("left in", leftInInches.pidGet());
