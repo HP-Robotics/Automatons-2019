@@ -60,7 +60,10 @@ public class Robot extends TimedRobot {
   public static final int CARGO_LEVEL3 = 7168;
 
   final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
-	final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
+  final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
+  
+  public final static double elevator_max_a = 100;
+  public final static double elevator_max_v = 100;
 	
 
   /* public static final double hatchkA = 0.0000501017;
@@ -133,7 +136,7 @@ public class Robot extends TimedRobot {
   public Button cargo2;
   public Button cargo3;
   public Button hatchFeeder;
-  public Button hatchToggle;
+  public Button groundIntake;
   public Button sdsIn;
   public Button sdsOut;
   public Button shipHatch;
@@ -229,8 +232,8 @@ public class Robot extends TimedRobot {
     hatch2 = new Button(operatorBox, 9, "Hatch Level 2");
     cargo1 = new Button(operatorBox, 3, "Cargo Level 1");
     hatch1 = new Button(operatorBox, 8, "Hatch Level 1");
-    hatchInOperator = new Button(operatorBox, 2, "Hatch In");
-    hatchOutOperator = new Button(operatorBox, 1, "Hatch Out");
+    hatchFeeder = new Button(operatorBox, 2, "Hatch In"); // change key
+    groundIntake = new Button(operatorBox, 1, "Hatch Out"); // change key
     //sdsIn and sdsOut are actually joysticks, so is magic button
 
 
@@ -325,7 +328,7 @@ public class Robot extends TimedRobot {
   }
   @Override
   public void teleopInit() {
-
+    elevatorController.configureGoal(0, elevator_max_v, elevator_max_a), true;
   }
   /** 
    * This function is called periodically during operator control.
@@ -428,7 +431,9 @@ public class Robot extends TimedRobot {
   }
 
   public void elevatorLogic(){
-    if(aButton1.held()){
+
+    elevatorController.enable();
+    /*if(aButton1.held()){
       elevator.set(ControlMode.PercentOutput, 0.4);
     }
     else if (bButton1.held()){
@@ -436,13 +441,40 @@ public class Robot extends TimedRobot {
     }
     else{
       elevator.set(ControlMode.PercentOutput, 0.0);
+    }*/
+    if((hatch1.changed()&&hatch1.on())|| (shipHatch.changed()&&shipHatch.on())|| (hatchFeeder.changed()&&hatchFeeder.on()))
+    {
+      elevatorController.configureGoal(HATCH_LEVEL1-elevatorEnc.get(), elevator_max_v, elevator_max_a, true);
+    } 
+    else if(cargo1.changed()&&cargo1.on() )
+    {
+      elevatorController.configureGoal(CARGO_LEVEL1-elevatorEnc.get(), elevator_max_v, elevator_max_a, true);
+    } 
+    else if(hatch2.changed()&&hatch2.on())
+    {
+      elevatorController.configureGoal(HATCH_LEVEL2-elevatorEnc.get(), elevator_max_v, elevator_max_a,true);
+    }
+    else if(cargo2.changed()&&cargo2.on())
+    {
+      elevatorController.configureGoal(CARGO_LEVEL2-elevatorEnc.get(), elevator_max_v, elevator_max_a, true);
+    }
+    else if(hatch3.changed()&&hatch3.on())
+    {
+      elevatorController.configureGoal(HATCH_LEVEL3-elevatorEnc.get(), elevator_max_v, elevator_max_a,true);
+    }
+    else if(cargo3.changed()&&cargo3.on())
+    {
+      elevatorController.configureGoal(CARGO_LEVEL3-elevatorEnc.get(), elevator_max_v, elevator_max_a,true);
+    }
+    else if(groundIntake.changed()&&groundIntake.on())
+    {
+      elevatorController.configureGoal(-elevatorEnc.get(), elevator_max_v, elevator_max_a,true);
     }
   }
 
   public void winchLogic(){
     if(xButton1.held()){
       winch.set(ControlMode.PercentOutput, 0.3);
-      System.out.println("nhdjkwhdefe");
     }
     else if (yButton1.held()){
       winch.set(ControlMode.PercentOutput, -0.3);
