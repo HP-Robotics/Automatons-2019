@@ -72,6 +72,7 @@ public class SnazzyLog {
 			m_bw.flush();
 
 		} catch(IOException e) {
+			System.out.println("Unexpected exception in " + m_file);
 			e.printStackTrace();
 			return false;
 		}

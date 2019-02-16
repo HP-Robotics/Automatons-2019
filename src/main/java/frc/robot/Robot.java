@@ -219,14 +219,14 @@ public class Robot extends TimedRobot {
     xButton1 = new Button(driverStick1, 3, "X");
     yButton1 = new Button(driverStick1, 4, "Y");
     trigger1 = new Button(driverStick1, 1, "SDS In");
-    thumb1 = new Button(driverStick1, 2, "SDS Out");
+    //thumb1 = new Button(driverStick1, 2, "SDS Out");
 
     aButton2 = new Button(driverStick2, 5, "A");
     bButton2 = new Button(driverStick2, 6, "B");
     xButton2 = new Button(driverStick2, 3, "X");
     yButton2 = new Button(driverStick2, 4, "Y");
-    trigger2 = new Button(driverStick2, 1, "SDS In");
-    thumb2 = new Button(driverStick2, 2, "SDS Out");
+    trigger2 = new Button(driverStick2, 1, "SDS Out");
+    //thumb2 = new Button(driverStick2, 2, "SDS Out");
 
     calibrateButton = new Button(driverStick1, 14, "Lib Owned");
 
