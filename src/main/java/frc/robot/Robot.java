@@ -79,6 +79,9 @@ public class Robot extends TimedRobot {
   public static final double hatchP = 0.01;
   public static final double hatchI = 0.00001;
 
+  public static final double winchP = 0.01;
+  public static final double winchI = 0.00001;
+
   public static final double elevatorkA = 0.000095086;
   public static final double elevatorkV = 0.00183371;
 
@@ -170,6 +173,10 @@ public class Robot extends TimedRobot {
   double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
   double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
   double[][] shiftLeft = {{0, 0, 0},{24, 24, 0}};
+
+  public double[] winchArray = {0, 923, 1798, 2592};
+  public int winchPos = 0;
+  public int winchCount = 0;
   
   TrajectoryPlanner racetrackStartTraj;
   TrajectoryPlanner racetrackTurnTraj;
@@ -258,7 +265,7 @@ public class Robot extends TimedRobot {
     driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
     driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);
     elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X);
-    winchEnc = new Encoder(21,22,true, EncodingType.k4X);
+    winchEnc = new Encoder(21,22,false, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
     hatchPot = new AnalogPotentiometer(0, 270, 0); /* 2700 Max, 2610 Min */
@@ -284,7 +291,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("setPoint", 0.0);
 
     hatchPIDOutput = new TalonPIDOutput(hatch, -1.0);
-    winchPIDOutput = new TalonPIDOutput(winch, -1.0);
+    winchPIDOutput = new TalonPIDOutput(winch, 1.0);
     elevatorPIDOutput = new TalonPIDOutput(elevator, -1);
     rightPIDOutput = new DrivePIDOutput(topRight, bottomRight, -1.0); 
     leftPIDOutput = new DrivePIDOutput(topLeft, bottomLeft, 1.0);
@@ -293,7 +300,7 @@ public class Robot extends TimedRobot {
     rightInInches = new DrivePIDSourceInches(driveRightEnc);
     hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.005, "hatch.csv", this);
   
-    winchController = new SnazzyMotionPlanner(0, 0, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.001, "winch.csv", this);
+    winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.001, "winch.csv", this);
     elevatorController = new SnazzyMotionPlanner(0, 0, 0, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.005, "elevator.csv", this);
     leftController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.005, "left.csv", this);
     rightController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.005, "right.csv", this);
@@ -356,6 +363,7 @@ public class Robot extends TimedRobot {
       pidTuneNow(winchController);
       return;
     }
+    winchLogic();
     intakeLogic();
     magicLogic();
     drivingLogic();
@@ -391,13 +399,10 @@ public class Robot extends TimedRobot {
     //hatchInOperator.update();
     //hatchOutOperator.update();
     calibrateButton.update();
+    winchToggleButton.update();
   }
  
   public void intakeLogic(){
-
-    if (!winchController.isEnabled()){
-      winchController.enable();
-    }
 
     if(trigger1.on()||operatorBox.getRawAxis(0)==1){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
@@ -405,9 +410,9 @@ public class Robot extends TimedRobot {
       roller.set(ControlMode.PercentOutput, -0.33);
       trigger2.toggleOff();
       System.out.println("in");
-      lb.light(trigger1);
-      lb.unlight(thumb1);
-      winchController.configureGoal(WINCH_DOWN_SETPOINT, 100, 100, true);
+      //lb.light(trigger1);
+      //lb.unlight(thumb1);
+      //winchController.configureGoal(WINCH_DOWN_SETPOINT, 100, 100, true);
       isUsingIntake = true;
     }
     if(trigger2.on()||operatorBox.getRawAxis(0)==-1){
@@ -416,9 +421,9 @@ public class Robot extends TimedRobot {
       roller.set(ControlMode.PercentOutput, 0.15);
       trigger1.toggleOff();
       System.out.println("out");
-      lb.light(thumb1);
-      lb.unlight(trigger1);
-      winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
+      //lb.light(thumb1);
+      //lb.unlight(trigger1);
+      //winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
       isUsingIntake = true;
     }
     if(!trigger1.on()&&!trigger2.on()&& operatorBox.getRawAxis(0)==0){
@@ -429,13 +434,13 @@ public class Robot extends TimedRobot {
       lb.unlight(trigger1);
       isUsingIntake = false;
     }
-    if(!isUsingIntake && winchToggleButton.changed()){
+    /*if(!isUsingIntake && winchToggleButton.changed()){
       if(winchController.getSetpoint() == WINCH_UP_SETPOINT){
         winchController.configureGoal(WINCH_DOWN_SETPOINT, 100, 100, true);
       }else{
         winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
       }
-    }
+    }*/
   }
 
   public void magicLogic(){
@@ -499,17 +504,18 @@ public class Robot extends TimedRobot {
     }
   }
 
-  /*public void winchLogic(){
-    if(xButton1.held()){
-      winch.set(ControlMode.PercentOutput, 0.3);
+  public void winchLogic(){
+    if (!winchController.isEnabled()){
+      winchController.enable();
     }
-    else if (yButton1.held()){
-      winch.set(ControlMode.PercentOutput, -0.3);
-    }  
-    else{
-      winch.set(ControlMode.PercentOutput, 0.0);
+    if(winchToggleButton.changed()){
+      System.out.println("i tried");
+      winchPos = winchCount % 4;
+      System.out.println(winchArray[winchPos]);
+      winchController.configureGoal(winchArray[winchPos]-winchEnc.get(), 2500, 2500, true);
+      winchCount ++;
     }
-}*/
+}
 
   public void hatchLogic(){
     if (hatchPot.get() >= HATCH_SAFE_TOP && hatchPot.get() <= HATCH_SAFE_BOTTOM) {
