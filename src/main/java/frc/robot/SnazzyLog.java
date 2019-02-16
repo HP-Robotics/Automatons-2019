@@ -18,7 +18,6 @@ public class SnazzyLog {
 	boolean m_open = false;
 
 	public boolean open(String file, String header) {
-		System.out.println(Timer.getFPGATimestamp()+"artrdtryf");
 		if (file == null) {
 			return false;
 		}
@@ -73,6 +72,7 @@ public class SnazzyLog {
 			m_bw.flush();
 
 		} catch(IOException e) {
+			System.out.println("Unexpected exception in " + m_file);
 			e.printStackTrace();
 			return false;
 		}

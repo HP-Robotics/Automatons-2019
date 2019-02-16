@@ -24,7 +24,7 @@ public class ButtonGrouper {
             }else{
                 b.toggleOff();
                 lights.unlight(b);
-                System.out.println(b + " unlight");
+                //System.out.println(b + " unlight");
             }
         }
 

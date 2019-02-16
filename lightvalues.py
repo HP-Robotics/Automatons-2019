@@ -7,7 +7,7 @@ import threading
 buttons = [["Reset Button", False], ["Hatch Level 3", False], ["Hatch Level 1", False], ["Hatch Level 2", False],
          ["Cargo Level 1", False], ["Cargo Level 2", False], ["Cargo Level 3", False], ["Cargo Ship Cargo", False],
          ["Cargo Ship Hatch", False], ["Magic Button", False], ["SDS In", False],
-         ["SDS Out", False], ["Hatch Out", False], ["Hatch In", False], ["nil", False], ["nil", False]]
+         ["SDS Out", False], ["Ground Intake", False], ["Hatch Feeder", False], ["nil", False], ["nil", False]]
 
 #NetworkTables
 cond = threading.Condition()

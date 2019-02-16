@@ -321,8 +321,8 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	
 	protected double calculateFeedForward() {
 		if((m_motionPlanEnabled || m_motionTrajectoryEnabled) && m_currentWaypoint != null) {
-    		return (m_currentWaypoint.m_expectedAcceleration * m_kA) + (m_currentWaypoint.m_expectedVelocity * m_kV)
-    				+ (m_currentWaypoint.m_expectedtA * m_kAT) + (m_currentWaypoint.m_expectedtV * m_kVT);
+    		return ((m_currentWaypoint.m_expectedAcceleration * m_kA) + (m_currentWaypoint.m_expectedVelocity * m_kV)
+    				+ (m_currentWaypoint.m_expectedtA * m_kAT) + (m_currentWaypoint.m_expectedtV * m_kVT))*m_invertMultiplier;
     	}
     	
     	return 0.0;
