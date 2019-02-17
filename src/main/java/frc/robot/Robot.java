@@ -403,11 +403,12 @@ public class Robot extends TimedRobot {
     calibrateButton.update();
     winchToggleButton.update();
     elevatorButtons.update();
+    sdsOperator.update();
 
   }
   public void intakeLogic(){
 
-    if(trigger2.on()||sdsOperator.getState() == 1){
+    if(/*trigger2.on()||*/sdsOperator.getState() == 1.0){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
       roller.set(ControlMode.PercentOutput, -0.50);
@@ -416,7 +417,7 @@ public class Robot extends TimedRobot {
       //lb.light(trigger1);
       //lb.unlight(thumb1);
     }
-    if(trigger1.on()||sdsOperator.getState()==-1){
+    if(/*trigger1.on()||*/sdsOperator.getState()==-1.0){
       isUsingIntake = true;
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
@@ -427,7 +428,7 @@ public class Robot extends TimedRobot {
       //lb.unlight(trigger1);
     }
 
-    if(!trigger1.on()&&!trigger2.on() && operatorBox.getRawAxis(0)==0.0){
+    if(/*!trigger1.on()&&!trigger2.on() && */sdsOperator.getState() ==0.0){
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
