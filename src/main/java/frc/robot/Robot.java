@@ -91,6 +91,8 @@ public class Robot extends TimedRobot {
   public static final double drivekV = 0.0168578;
   public static final double driveKA = 0.00000007211;
 
+  public boolean hatchDown = false;
+
   public boolean calibrating = false;
   public boolean pidTuning = false;
 
@@ -153,8 +155,7 @@ public class Robot extends TimedRobot {
   public Button sdsOut;
   public Button shipHatch;
   public Button shipCargo;
-  public Button hatchInOperator;
-  public Button hatchOutOperator;
+ 
 
   public ButtonGrouper elevatorButtons;
  
@@ -398,6 +399,7 @@ public class Robot extends TimedRobot {
     hatchInButton2.update();
     //hatchInOperator.update();
     //hatchOutOperator.update();
+    hatchToggle.update();
     calibrateButton.update();
     winchToggleButton.update();
     elevatorButtons.update();
@@ -428,7 +430,8 @@ public class Robot extends TimedRobot {
       //winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
       isUsingIntake = true;
     }
-    if(!trigger1.on()&&!trigger2.on()/*&& operatorBox.getRawAxis(0)==0*/){
+
+    if(!trigger1.on()&&!trigger2.on() && operatorBox.getRawAxis(0)==0.0){
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
@@ -526,15 +529,18 @@ public class Robot extends TimedRobot {
         hatchController.enable();
         System.out.println("Hi jeremy");
       }
-      if ((!hatchInButton2.on() && hatchInButton2.changed())/*&&(!hatchToggle.on()&& hatchToggle.changed())*/) {
+      if(hatchInButton2.changed() || hatchToggle.changed()){
+        hatchDown=!hatchDown;
+        if (!hatchDown) {
           hatchController.configureGoal(HATCH_UP-hatchPot.get(), 500, 500, true);
           System.out.println("Hatch is up");
           lb.unlight(hatchToggle);
         }
-      else if ((hatchInButton2.on() && hatchInButton2.changed())/*||(hatchToggle.on()&& hatchToggle.changed())*/) {
+        else {
           hatchController.configureGoal(HATCH_DOWN-hatchPot.get(), 500, 500, true);
           System.out.println("Hatch is down");
           lb.light(hatchToggle);
+        }
       }
     }else{
       hatchController.disable();
