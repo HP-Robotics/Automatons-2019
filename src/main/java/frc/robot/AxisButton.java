@@ -23,7 +23,7 @@ public class AxisButton  {
 	}
 
 	//check if the Button is pressed
-	public double on() {
+	public double getState() {
 		return state;
 	}
 	
