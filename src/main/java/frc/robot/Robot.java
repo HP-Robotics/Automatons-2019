@@ -90,9 +90,7 @@ public class Robot extends TimedRobot {
 
   public static final double drivekV = 0.0168578;
   public static final double driveKA = 0.00000007211;
-
   public boolean hatchDown = false;
-
   public boolean calibrating = false;
   public boolean pidTuning = false;
 
@@ -156,6 +154,7 @@ public class Robot extends TimedRobot {
   public Button shipHatch;
   public Button shipCargo;
  
+  public AxisButton sdsOperator;
 
   public ButtonGrouper elevatorButtons;
  
@@ -253,6 +252,7 @@ public class Robot extends TimedRobot {
     hatchFeeder = new Button(operatorBox, 2, "Hatch Feeder");
     hatchToggle = new Button(operatorBox, 1, "Hatch Toggle"); // change key
     //sdsIn and sdsOut are actually joysticks, so is magic button
+    sdsOperator = new AxisButton(operatorBox, 0, "SDS Switch");
 
 
     lb = new LiteButton();
@@ -405,10 +405,9 @@ public class Robot extends TimedRobot {
     elevatorButtons.update();
 
   }
- 
   public void intakeLogic(){
 
-    if(trigger2.on()||operatorBox.getRawAxis(0)==1){
+    if(trigger2.on()||sdsOperator.getState() == 1){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
       roller.set(ControlMode.PercentOutput, -0.50);
@@ -416,10 +415,9 @@ public class Robot extends TimedRobot {
       System.out.println("in");
       //lb.light(trigger1);
       //lb.unlight(thumb1);
-      //winchController.configureGoal(WINCH_DOWN_SETPOINT, 100, 100, true);
-      isUsingIntake = true;
     }
-    if(trigger1.on()||operatorBox.getRawAxis(0)==-1){
+    if(trigger1.on()||sdsOperator.getState()==-1){
+      isUsingIntake = true;
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
       roller.set(ControlMode.PercentOutput, 0.15);
@@ -427,8 +425,6 @@ public class Robot extends TimedRobot {
       System.out.println("out");
       //lb.light(thumb1);
       //lb.unlight(trigger1);
-      //winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
-      isUsingIntake = true;
     }
 
     if(!trigger1.on()&&!trigger2.on() && operatorBox.getRawAxis(0)==0.0){
@@ -526,19 +522,16 @@ public class Robot extends TimedRobot {
   public void hatchLogic(){
     if (hatchPot.get() >= HATCH_SAFE_TOP && hatchPot.get() <= HATCH_SAFE_BOTTOM) {
       if(!hatchController.isEnabled()){
-        hatchController.enable();
-        System.out.println("Hi jeremy");
+        hatchController.enable();   
       }
       if(hatchInButton2.changed() || hatchToggle.changed()){
         hatchDown=!hatchDown;
         if (!hatchDown) {
           hatchController.configureGoal(HATCH_UP-hatchPot.get(), 500, 500, true);
-          System.out.println("Hatch is up");
           lb.unlight(hatchToggle);
         }
         else {
           hatchController.configureGoal(HATCH_DOWN-hatchPot.get(), 500, 500, true);
-          System.out.println("Hatch is down");
           lb.light(hatchToggle);
         }
       }
