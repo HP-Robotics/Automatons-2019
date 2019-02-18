@@ -52,18 +52,17 @@ public class Robot extends TimedRobot {
   public static final double HATCH_SAFE_TOP = 30.0;
 
   public static final int ENC_ERROR = 5;
-  public static final int HATCH_LEVEL1 = 20048;
-  public static final int HATCH_LEVEL2 = 80096;
-  public static final int HATCH_LEVEL3 = 120144;
-  public static final int CARGO_LEVEL1 = 60072;
-  public static final int CARGO_LEVEL2 = 100120;
-  public static final int CARGO_LEVEL3 = 140168;
+  public static final int HATCH_LEVEL1 = 3000;
+  public static final int HATCH_LEVEL2 = 156080;
+  public static final int HATCH_LEVEL3 = 281190;
+  public static final int CARGO_LEVEL1 = 103300;
+  public static final int CARGO_LEVEL2 = 231580;
+  public static final int CARGO_LEVEL3 = 341545;
 
   final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
   final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
   
-  public final static double elevator_max_a = 50000;
-  public final static double elevator_max_v = 50000;
+  
 
   public boolean isUsingIntake;
 	
@@ -82,11 +81,13 @@ public class Robot extends TimedRobot {
   public static final double winch_max_a = 10000;
   public static final double winch_max_v = 4000;
 
-  public static final double elevatorP = 0.00005;
-  public static final double elevatorI = 0.00000002;
-  public static final double elevatorD = 0.0001;
-  public static final double elevatorkA = 0;//0.000095086;
+  public static final double elevatorP = 0.00003;
+  public static final double elevatorI = 0.000002;
+  public static final double elevatorD = 0.001;
+  public static final double elevatorkA = 0.0;//0.000005;//0.000095086;
   public static final double elevatorkV = 0;//0.00183371;
+  public final static double elevator_max_a = 75000;
+  public final static double elevator_max_v = 200000;
 
   public static final double drivekV = 0.0168578;
   public static final double driveKA = 0.00000007211;
@@ -173,9 +174,9 @@ public class Robot extends TimedRobot {
   public LiteButton lb;
   public Button[] elevatorButtonArray;
 
-  double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
+  /*double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
   double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
-  double[][] shiftLeft = {{0, 0, 0},{24, 24, 0}};
+  double[][] shiftLeft = {{0, 0, 0},{24, 24, 0}};*/
 
   public double[] winchArray = {0, /*923,*/ 2592};
   public int winchPos = 0;
@@ -270,7 +271,7 @@ public class Robot extends TimedRobot {
     winchEnc = new Encoder(21,22,false, EncodingType.k4X);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
-    hatchPot = new AnalogPotentiometer(0, 270, 0); /* 2700 Max, 2610 Min */
+    hatchPot = new AnalogPotentiometer(4, 270, 0); /* 2700 Max, 2610 Min */
 
     //AnalogInput ai1 = new AnalogInput(0);
     //AnalogInput ai2 = new AnalogInput(2);
@@ -300,12 +301,14 @@ public class Robot extends TimedRobot {
 
     leftInInches = new DrivePIDSourceInches(driveLeftEnc);
     rightInInches = new DrivePIDSourceInches(driveRightEnc);
-    hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.005, "hatch.csv", this);
-    winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.001, "winch.csv", this);
-    elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.005, "elevator.csv", this);
-    elevatorController.setOutputRange(-0.1, 1.0);
-    leftController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.005, "left.csv", this);
-    rightController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.005, "right.csv", this);
+    hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.01, "hatch.csv", this);
+    winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
+    elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
+    elevatorController.setOutputRange(-0.4, 1.0);
+    leftController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
+    rightController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
+
+
     
   }
   /**
@@ -346,7 +349,13 @@ public class Robot extends TimedRobot {
   }
   @Override
   public void teleopInit() {
-    elevatorController.configureGoal(0, elevator_max_v, elevator_max_a, true);
+    //elevatorController.configureGoal(0, elevator_max_v, elevator_max_a, true);
+    hatch.set(ControlMode.PercentOutput, 0.0);
+    winch.set(ControlMode.PercentOutput, 0.0);
+    elevator.set(ControlMode.PercentOutput, 0.0);
+    leftSDS.set(ControlMode.PercentOutput, 0.0);
+    rightSDS.set(ControlMode.PercentOutput, 0.0);
+
   }
     
   /** 
@@ -403,11 +412,14 @@ public class Robot extends TimedRobot {
     calibrateButton.update();
     winchToggleButton.update();
     elevatorButtons.update();
+    sdsOperator.update();
 
   }
   public void intakeLogic(){
 
-    if(trigger2.on()||sdsOperator.getState() == 1){
+    //System.out.println(operatorBox.getRawAxis(0));
+
+    if(trigger2.on()||sdsOperator.getState() == 1.0){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
       roller.set(ControlMode.PercentOutput, -0.50);
@@ -416,7 +428,7 @@ public class Robot extends TimedRobot {
       //lb.light(trigger1);
       //lb.unlight(thumb1);
     }
-    if(trigger1.on()||sdsOperator.getState()==-1){
+    if(trigger1.on()||sdsOperator.getState()==-1.0){
       isUsingIntake = true;
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
@@ -427,7 +439,7 @@ public class Robot extends TimedRobot {
       //lb.unlight(trigger1);
     }
 
-    if(!trigger1.on()&&!trigger2.on() && operatorBox.getRawAxis(0)==0.0){
+    if(trigger1.on()&&!trigger2.on() && sdsOperator.getState()==0.0){
       leftSDS.set(ControlMode.PercentOutput, 0.0);
       rightSDS.set(ControlMode.PercentOutput, 0.0);
       roller.set(ControlMode.PercentOutput, 0.0);
@@ -464,7 +476,6 @@ public class Robot extends TimedRobot {
   }
 
   public void elevatorLogic(){
-
     if (!elevatorController.isEnabled()){
       elevatorController.enable();
     }
@@ -481,7 +492,7 @@ public class Robot extends TimedRobot {
     }*/
     if((hatch1.changed()&&hatch1.on())|| (shipHatch.changed()&&shipHatch.on())|| (hatchFeeder.changed()&&hatchFeeder.on()))
     {
-      elevatorController.configureGoal(HATCH_LEVEL1-elevatorEnc.get(), elevator_max_v, elevator_max_a, true);
+      elevatorController.configureGoal(HATCH_LEVEL1-elevatorEnc.get(), elevator_max_v, elevator_max_a, false);
     } 
     else if(cargo1.changed()&&cargo1.on() )
     {

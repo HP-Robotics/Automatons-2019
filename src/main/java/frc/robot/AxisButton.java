@@ -4,9 +4,11 @@ import edu.wpi.first.wpilibj.Joystick;
 
 public class AxisButton  {
 	private boolean held = false;	//stands for 'held', true if the Button is being actively held down
-	private double state = 0;	//stands for 'state', true if the Button is pressed
-	private double lastState = 0;	//stands for 'last state', stores the previous state of the Button
+	private double state = 0.0;	//stands for 'state', true if the Button is pressed
+	private double lastState = 0.0;	//stands for 'last state', stores the previous state of the Button
 	private boolean changed = false;	//stands for 'changed', true if the Button's previous state does not match its current state
+	private double lastAxisState = 0.0;
+	private double fudgeAxis = 0.0;
 	private double abutton;
 	private String name;
 	private Joystick stick;
@@ -40,20 +42,37 @@ public class AxisButton  {
 	//update the Button, should be called periodically
 	public void update() {
 		abutton = stick.getRawAxis(numb);
-		if(abutton != 0 && (abutton != lastState)) {
-			state = abutton;
+		//Make abutton less bad
+		if(abutton >= -0.09 || abutton <= 0.09){
+			fudgeAxis = 0.0;
+		}
+		if(abutton > 0.5){
+			fudgeAxis = 1.0;
+		}
+		if(abutton < -0.5){
+			fudgeAxis = -1.0;
+		}
+
+		//System.out.println("RA: " + abutton + " FA: " + fudgeAxis);
+
+		if(fudgeAxis != 0 && (fudgeAxis != lastState)  && fudgeAxis != lastAxisState ) {
+			state = fudgeAxis;
 			changed = true;
+			//System.out.println("State switched to " + state);
 			
-		} else if(abutton != 0 && abutton == lastState) {
-			state = 0;
+		} else if(fudgeAxis != 0 && (fudgeAxis == lastState && fudgeAxis != lastAxisState)) {
+			state = 0.0;
 			changed = true;
+			System.out.println("State off: " + state);
 
 		}else {
 			changed = false;
+			System.out.println("State not switched." + lastState + "    " + lastAxisState);
 		}
 		
 		held = abutton != 0;
 		lastState = state;
+		lastAxisState = fudgeAxis;
 	}
 	
 	//reset all values
