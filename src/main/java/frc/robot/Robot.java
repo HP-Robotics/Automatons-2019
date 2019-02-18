@@ -89,11 +89,15 @@ public class Robot extends TimedRobot {
   public final static double elevator_max_a = 75000;
   public final static double elevator_max_v = 200000;
 
-  public static final double drivekV = 0.0168578;
-  public static final double driveKA = 0.00000007211;
+  public final static double driveP = 0.5;
+  public final static double driveI = 0.05;
+  public final static double driveD = 1.5;
+  public static final double drivekV = 0.0108;
+  public static final double driveKA = 0.002829;
+  // 38.1 is about 180 degrees, 18.4 is about 90
   public boolean hatchDown = false;
   public boolean calibrating = false;
-  public boolean pidTuning = false;
+  public boolean pidTuning = true;
 
   public TalonSRX topRight;
   public TalonSRX topLeft;
@@ -174,17 +178,17 @@ public class Robot extends TimedRobot {
   public LiteButton lb;
   public Button[] elevatorButtonArray;
 
-  /*double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
+  double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
   double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
-  double[][] shiftLeft = {{0, 0, 0},{24, 24, 0}};*/
+  double[][] shiftLeft = {{0, 0, 0},{36, 6, 0}};
 
   public double[] winchArray = {0, /*923,*/ 2592};
   public int winchPos = 0;
   public int winchCount = 0;
   
-  /*TrajectoryPlanner racetrackStartTraj;
+  TrajectoryPlanner racetrackStartTraj;
   TrajectoryPlanner racetrackTurnTraj;
-  TrajectoryPlanner shiftLeftTraj;*/
+  TrajectoryPlanner shiftLeftTraj;
 
   /**
    * This function is run when the robot is first started up and should be
@@ -194,12 +198,12 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     
-		/*racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
+		racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
     racetrackStartTraj.generate();
     racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
     racetrackTurnTraj.generate();
-    shiftLeftTraj = new TrajectoryPlanner(shiftLeft, 50, 50, 50, "shiftLeft");
-    shiftLeftTraj.generate();*/
+    shiftLeftTraj = new TrajectoryPlanner(shiftLeft, 100, 100, 100, "shiftLeft");
+    shiftLeftTraj.generate();
 
     driverStick1 = new Joystick(DRIVER_STICK1);
     driverStick2 = new Joystick(DRIVER_STICK2);
@@ -288,10 +292,10 @@ public class Robot extends TimedRobot {
     hatch = new TalonSRX(31);
     elevator = new TalonSRX(40);
 
-    SmartDashboard.putNumber("P", 0.0);
-    SmartDashboard.putNumber("I", 0.0);
-    SmartDashboard.putNumber("D", 0.0);
-    SmartDashboard.putNumber("setPoint", 0.0);
+    SmartDashboard.putNumber("P", 0.7);
+    SmartDashboard.putNumber("I", 0.015);
+    SmartDashboard.putNumber("D", 1.0);
+    SmartDashboard.putNumber("Setpoint", 0.0);
 
     hatchPIDOutput = new TalonPIDOutput(hatch, -1.0);
     winchPIDOutput = new TalonPIDOutput(winch, 1.0);
@@ -305,8 +309,8 @@ public class Robot extends TimedRobot {
     winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
     elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
-    leftController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
-    rightController = new SnazzyMotionPlanner(0, 0, 0, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
+    leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
+    rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
 
 
     
@@ -590,18 +594,21 @@ public class Robot extends TimedRobot {
   }
   
   public void pidTuneNow(SnazzyMotionPlanner p) {
-      rightController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
-      leftController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
+      //rightController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
+      //leftController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
       if(calibrateButton.on()){
           if(calibrateButton.changed()) {
             driveRightEnc.reset();
             driveLeftEnc.reset();
+            leftController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
+            rightController.configureGoal(-SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
+            
             //leftController.configureTrajectory(shiftLeftTraj.getLeftTrajectory(), false);
-		        //.configureTrajectory(shiftLeftTraj.getRightTrajectory(), false);
+            //rightController.configureTrajectory(shiftLeftTraj.getRightTrajectory(), false);
 
             rightController.enable();
             leftController.enable();
-            System.out.println("enable");
+            System.out.println("enable" + SmartDashboard.getNumber("Setpoint", 0.0));
           }
           
         }else if (calibrateButton.changed()&& !calibrateButton.on()){

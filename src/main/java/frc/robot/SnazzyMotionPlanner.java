@@ -58,7 +58,7 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 			double period, String fname, Robot robot) {
 		super(Kp, Ki, Kd, Kf, source, output, period, fname);
 		m_controlLoop = new java.util.Timer();
-		m_controlLoop.schedule(new PIDTask(), 1L, (long) (period * 1000));
+		m_controlLoop.schedule(new PIDTask(),0L, (long) (period * 1000));
 		m_calLog = new SnazzyLog();
 		m_kA = kA;
 		m_kV = kV;
@@ -87,6 +87,10 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 		m_dwell = dwell;
 		m_initTime = Timer.getFPGATimestamp();
 		m_initPos = m_pidInput.pidGet();
+
+		System.out.println("goal " + goal);
+		System.out.println("max a" + max_a);
+		System.out.println(" max v " + max_v);
 
 		//check if goal is negative
 		if(goal < 0) {
@@ -129,6 +133,10 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 		m_positionAtMaxVelocity = 0.5 * m_maxAcceleration * (m_timeUntilMaxVelocity * m_timeUntilMaxVelocity);
 		m_positionAtEndOfCruise = m_positionAtMaxVelocity + (m_timeSpentCruising * m_maxVelocity);
 		m_timeAtEndOfCruise = m_timeUntilMaxVelocity + m_timeSpentCruising;
+
+		System.out.println(" time spent cruising" + m_timeSpentCruising);
+		System.out.println(" max velocity" + m_maxVelocity);
+		System.out.println("time until midpoint" + t_until_midpoint);
 
 	}
 
@@ -375,10 +383,12 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 
 		@Override
 		public void run() {
+			m_pidOutput.pidWrite(0.0);
 			if(isEnabled()) {
 				if(m_calibrating) {
 					runCalibration();
 				}else if(m_motionPlanEnabled){
+					//System.out.println("eeeee");
 					runPlan();
 				}else if(m_motionTrajectoryEnabled) {
 					runTrajectory();

@@ -63,11 +63,11 @@ public class AxisButton  {
 		} else if(fudgeAxis != 0 && (fudgeAxis == lastState && fudgeAxis != lastAxisState)) {
 			state = 0.0;
 			changed = true;
-			System.out.println("State off: " + state);
+			//System.out.println("State off: " + state);
 
 		}else {
 			changed = false;
-			System.out.println("State not switched." + lastState + "    " + lastAxisState);
+			//System.out.println("State not switched." + lastState + "    " + lastAxisState);
 		}
 		
 		held = abutton != 0;
