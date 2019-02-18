@@ -66,19 +66,20 @@ public class AxisButton  {
 			//System.out.println("State off: " + state);
 
 		}else {
+			state = lastState;
 			changed = false;
 			//System.out.println("State not switched." + lastState + "    " + lastAxisState);
 		}
 		
-		held = abutton != 0;
+		held = abutton != 0.0;
 		lastState = state;
 		lastAxisState = fudgeAxis;
 	}
 	
 	//reset all values
 	public void reset() {
-		state = 0;
-		lastState = 0;
+		state = 0.0;
+		lastState = 0.0;
 		changed = false;
 	}
 
