@@ -41,6 +41,13 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	private double m_kV;
 	private double m_kAT;
 	private double m_kVT;
+
+	private double m_topCap;
+	private double m_botCap;
+	private double m_proErr;
+	private boolean m_protect = false;
+	private double m_ogMinimumOutput;
+	private double m_ogMaximumOutput;
 	
 	private Robot m_r;
 	
@@ -77,6 +84,8 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 		m_kAT = kat;
 		m_kVT = kvt;
 	}
+
+	
 	
 	public double getCurrentDistance() {
 		return m_pidInput.pidGet();
@@ -378,6 +387,24 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	public boolean getCalibrate() {
 		return m_calibrating;
 	}
+
+	public void setProtect(double bcap, double tcap, double err){
+		m_topCap = tcap;
+		m_botCap = bcap;
+		m_proErr = err;
+		m_ogMaximumOutput = m_maximumOutput;
+		m_ogMinimumOutput = m_minimumOutput;
+		m_protect = true;
+	}
+
+	public void protectThis(){
+		if(m_dwell && m_planFinished && Math.abs(getError())<= m_proErr ){
+			setOutputRange(m_botCap, m_topCap);
+
+		}else {
+			setOutputRange(m_ogMinimumOutput, m_ogMaximumOutput);
+		}
+	}
 	
 	private class PIDTask extends TimerTask {
 
@@ -389,6 +416,9 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 				}else if(m_motionPlanEnabled){
 					//System.out.println("eeeee");
 					runPlan();
+					if(m_protect){
+						protectThis();
+					}
 				}else if(m_motionTrajectoryEnabled) {
 					runTrajectory();
 				}

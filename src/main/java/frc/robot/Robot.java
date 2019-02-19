@@ -317,6 +317,7 @@ public class Robot extends TimedRobot {
     winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
     elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
+    elevatorController.setProtect(-0.1, 0.2, 500);
     //leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
     //rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
 

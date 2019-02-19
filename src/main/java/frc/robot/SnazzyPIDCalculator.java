@@ -42,8 +42,8 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
   private double m_I; // factor for "integral" control
   private double m_D; // factor for "derivative" control
   private double m_F; // factor for feedforward term
-  private double m_maximumOutput = 1.0; // |maximum output|
-  private double m_minimumOutput = -1.0; // |minimum output|
+  public double m_maximumOutput = 1.0; // |maximum output|
+  public double m_minimumOutput = -1.0; // |minimum output|
   private double m_maximumInput = 0.0; // maximum input - limit setpoint to this
   private double m_minimumInput = 0.0; // minimum input - limit setpoint to this
   // do the endpoints wrap around? eg. Absolute encoder
@@ -500,6 +500,8 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
     m_minimumOutput = minimumOutput;
     m_maximumOutput = maximumOutput;
   }
+
+
 
   /**
    * Set the setpoint for the PIDController Clears the queue for GetAvgError().
