@@ -383,7 +383,6 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 
 		@Override
 		public void run() {
-			m_pidOutput.pidWrite(0.0);
 			if(isEnabled()) {
 				if(m_calibrating) {
 					runCalibration();

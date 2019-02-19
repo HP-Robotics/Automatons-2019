@@ -7,7 +7,7 @@ public class AxisButton  {
 	private double state = 0.0;	//stands for 'state', true if the Button is pressed
 	private double lastState = 0.0;	//stands for 'last state', stores the previous state of the Button
 	private boolean changed = false;	//stands for 'changed', true if the Button's previous state does not match its current state
-	private double lastAxisState = 0.0;
+	private double lastAxisTriggered = 0.0;
 	private double fudgeAxis = 0.0;
 	private double abutton;
 	private String name;
@@ -55,17 +55,23 @@ public class AxisButton  {
 
 		//System.out.println("RA: " + abutton + " FA: " + fudgeAxis);
 
-		if(fudgeAxis != 0 && (fudgeAxis != lastState)  && fudgeAxis != lastAxisState ) {
+		if(fudgeAxis != 0 && (fudgeAxis != lastState)  && fudgeAxis != lastAxisTriggered ) {
 			state = fudgeAxis;
 			changed = true;
+			lastAxisTriggered = fudgeAxis;
 			//System.out.println("State switched to " + state);
 			
-		} else if(fudgeAxis != 0 && (fudgeAxis == lastState && fudgeAxis != lastAxisState)) {
+		} else if(fudgeAxis != 0 && (fudgeAxis == lastState && fudgeAxis != lastAxisTriggered)) {
 			state = 0.0;
 			changed = true;
+			lastAxisTriggered = fudgeAxis;
 			//System.out.println("State off: " + state);
-
-		}else {
+		}
+		else if(fudgeAxis == 0){
+			lastAxisTriggered = 0;
+		}
+		else
+		{
 			state = lastState;
 			changed = false;
 			//System.out.println("State not switched." + lastState + "    " + lastAxisState);
@@ -73,7 +79,7 @@ public class AxisButton  {
 		
 		held = abutton != 0.0;
 		lastState = state;
-		lastAxisState = fudgeAxis;
+		
 	}
 	
 	//reset all values
