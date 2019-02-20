@@ -59,6 +59,7 @@ public class Robot extends TimedRobot {
   public static final int CARGO_LEVEL1 = 2870;
   public static final int CARGO_LEVEL2 = 6432;
   public static final int CARGO_LEVEL3 = 9570;
+  public static final int HOP_ELEVATOR = 700;
 
   final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
   final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
@@ -350,7 +351,7 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-
+    elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
   }
 
   /**
@@ -365,9 +366,10 @@ public class Robot extends TimedRobot {
     //elevatorController.configureGoal(0, elevator_max_v, elevator_max_a, true);
     //hatch.set(ControlMode.PercentOutput, 0.0);
     //winch.set(ControlMode.PercentOutput, 0.0);
-    elevator.set(ControlMode.PercentOutput, 0.0);
-    leftSDS.set(ControlMode.PercentOutput, 0.0);
-    rightSDS.set(ControlMode.PercentOutput, 0.0);
+    //elevator.set(ControlMode.PercentOutput, 0.0);
+    //leftSDS.set(ControlMode.PercentOutput, 0.0);
+    //rightSDS.set(ControlMode.PercentOutput, 0.0);
+    elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
 
   }
     
