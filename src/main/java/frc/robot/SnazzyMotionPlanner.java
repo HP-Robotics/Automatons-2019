@@ -400,9 +400,11 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	public void protectThis(){
 		if(m_dwell && m_planFinished && Math.abs(getError())<= m_proErr ){
 			setOutputRange(m_botCap, m_topCap);
+			//System.out.println("I am protecting");
 
 		}else {
 			setOutputRange(m_ogMinimumOutput, m_ogMaximumOutput);
+			//System.out.println("Now im not");
 		}
 	}
 	

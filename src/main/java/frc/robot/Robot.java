@@ -53,12 +53,12 @@ public class Robot extends TimedRobot {
   public static final double HATCH_SAFE_TOP = 30.0;
 
   public static final int ENC_ERROR = 5;
-  public static final int HATCH_LEVEL1 = 3000;
-  public static final int HATCH_LEVEL2 = 156080;
-  public static final int HATCH_LEVEL3 = 281190;
-  public static final int CARGO_LEVEL1 = 103300;
-  public static final int CARGO_LEVEL2 = 231580;
-  public static final int CARGO_LEVEL3 = 341545;
+  public static final int HATCH_LEVEL1 = 100;
+  public static final int HATCH_LEVEL2 = 4335;
+  public static final int HATCH_LEVEL3 = 7810;
+  public static final int CARGO_LEVEL1 = 2870;
+  public static final int CARGO_LEVEL2 = 6432;
+  public static final int CARGO_LEVEL3 = 9570;
 
   final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
   final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
@@ -82,13 +82,13 @@ public class Robot extends TimedRobot {
   public static final double winch_max_a = 10000;
   public static final double winch_max_v = 4000;
 
-  public static final double elevatorP = 0.00003;
-  public static final double elevatorI = 0.000002;
-  public static final double elevatorD = 0.001;
+  public static final double elevatorP = 0.00108;
+  public static final double elevatorI = 0.0002;
+  public static final double elevatorD = 0.02;
   public static final double elevatorkA = 0.0;//0.000005;//0.000095086;
   public static final double elevatorkV = 0;//0.00183371;
-  public final static double elevator_max_a = 75000;
-  public final static double elevator_max_v = 200000;
+  public final static double elevator_max_a = 2080;
+  public final static double elevator_max_v = 5555;
 
   public final static double driveP = 0.5;
   public final static double driveI = 0.05;
@@ -307,7 +307,7 @@ public class Robot extends TimedRobot {
 
     hatchPIDOutput = new TalonPIDOutput(hatch, -1.0);
     winchPIDOutput = new TalonPIDOutput(winch, 1.0);
-    elevatorPIDOutput = new TalonPIDOutput(elevator, 1.0);
+    elevatorPIDOutput = new TalonPIDOutput(elevator, -1.0);
     rightPIDOutput = new DrivePIDOutput(topRight, bottomRight, -1.0); 
     leftPIDOutput = new DrivePIDOutput(topLeft, bottomLeft, 1.0);
 
@@ -317,7 +317,7 @@ public class Robot extends TimedRobot {
     winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
     elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
-    elevatorController.setProtect(-0.1, 0.2, 500);
+    elevatorController.setProtect(-0.1, 0.2, 100);
     //leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
     //rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
 
@@ -584,6 +584,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("right in", rightInInches.pidGet());
     SmartDashboard.putNumber("elevator set", elevatorController.getSetpoint());
     SmartDashboard.putBoolean("limit switch", winchDown.get());
+    SmartDashboard.putNumber("elevator current", elevator.getOutputCurrent());
   }
   public void calibrateNow(SnazzyMotionPlanner p) {
     if(calibrateButton.changed()&& calibrateButton.on()){
@@ -627,7 +628,7 @@ public class Robot extends TimedRobot {
             leftController.enable();
             System.out.println("enable" + SmartDashboard.getNumber("Setpoint", 0.0));*/
 
-            //elevator.set(ControlMode.PercentOutput, SmartDashboard.getNumber("Setpoint",0.0));
+            elevator.set(ControlMode.PercentOutput, SmartDashboard.getNumber("Setpoint",0.0));
 
           }
           
