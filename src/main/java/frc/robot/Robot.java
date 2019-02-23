@@ -10,6 +10,9 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Encoder;
@@ -69,8 +72,8 @@ public class Robot extends TimedRobot {
   final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (24.0/60.0) * (1.0/3.0) * (1.0/256.0)*(156.0/160.0);
 	final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
   
+  NetworkTable table;
   
-
   public boolean isUsingIntake;
 	
 
@@ -289,7 +292,7 @@ public class Robot extends TimedRobot {
     elevatorButtons = new ButtonGrouper(elevatorButtonArray, lb);
 
     winchDown = new DigitalInput(9);
-    //ANTI-FRANK
+    //ATLAS
     /*topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
@@ -305,7 +308,7 @@ public class Robot extends TimedRobot {
     bottomRight = new TalonSRX(4);
     bottomRight.setInverted(true);
 
-    //ANTI-FRANK
+    //ATLAS
     /*driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
     driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);*/
     elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X);
@@ -652,26 +655,44 @@ public class Robot extends TimedRobot {
   }
   
   public void pidTuneNow(SnazzyMotionPlanner p) {
+    TrajectoryPlanner dynamo;
       //rightController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
       //leftController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
-      if(calibrateButton.on()){
-          if(calibrateButton.changed()) {
-            driveRightEnc.reset();
-            driveLeftEnc.reset();
-            leftController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
-            rightController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
+      if(calibrateButton.on() && calibrateButton.changed()){
+        System.out.println("ENABLE");
+
+        table = NetworkTableInstance.getDefault().getTable("limelight");
+        
+        double[] defaultValue = new double[0];
+        double[] tarpos = table.getEntry("camtran").getDoubleArray(defaultValue);
+        //ystem.out.println(table.getEntry("camtran"));
+
+        //POSITIVE Y IS LEFT, POSITIVE ANGLE IS COUNTERCLOCKWISE
+
+        double[][] dynamoPlan = {{0,0,0},{-tarpos[2]-40, tarpos[0]-6, tarpos[4]}};
+        double[][] fakePlan = {{0,0,0},{30, 4, 15}};
+        dynamo = new TrajectoryPlanner(dynamoPlan, 50, 50, 50, "vision.csv");
+
+        System.out.println(-tarpos[2]-40 + ", " + tarpos[0] + ", " + tarpos[4]);
+
+        dynamo.generate();
+
+        System.out.println("GENED UP");
+
+        //driveRightEnc.reset();
+        //driveLeftEnc.reset();
+        //leftController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
+        //rightController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
             
-            //leftController.configureTrajectory(shiftLeftTraj.getLeftTrajectory(), false);
-            //rightController.configureTrajectory(shiftLeftTraj.getRightTrajectory(), false);
+            leftController.configureTrajectory(dynamo.getLeftTrajectory(), false);
+            rightController.configureTrajectory(dynamo.getRightTrajectory(), false);
 
             rightController.enable();
             leftController.enable();
-            System.out.println("enable" + SmartDashboard.getNumber("Setpoint", 0.0));
+            // System.out.println("enable" + SmartDashboard.getNumber("Setpoint", 0.0));
 
             //elevator.set(ControlMode.PercentOutput, SmartDashboard.getNumber("Setpoint",0.0));
 
-          }
-          
         }else if (calibrateButton.changed()&& !calibrateButton.on()){
           rightController.disable();
           leftController.disable();
