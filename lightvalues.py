@@ -1,15 +1,22 @@
-import subprocess
 import time
 from networktables import NetworkTables
 import threading
 import math
 import pathfinder as pf
+from ctypes import WinDLL
+import sys
+import signal
 
 # buttons[i][0] = name, buttons[i][1] = default value
 buttons = [["Reset Button", False], ["Hatch Level 3", False], ["Hatch Level 1", False], ["Hatch Level 2", False],
          ["Cargo Level 1", False], ["Cargo Level 2", False], ["Cargo Level 3", False], ["Cargo Ship Cargo", False],
          ["Cargo Ship Hatch", False], ["Magic Button", False], ["SDS In", False],
          ["SDS Out", False], ["Ground Intake", False], ["Hatch Feeder", False], ["nil", False], ["nil", False]]
+
+pacdrive = WinDLL("C:\\buttonbox\\PacDrive32.dll")
+def signal_handler(signal, frame):
+    pacdrive.PacShutdown()
+    sys.exit(0)
 
 #NetworkTables
 cond = threading.Condition()
@@ -32,6 +39,12 @@ with cond:
 print("Connected!")
 
 btable = NetworkTables.getTable('SmartDashboard')
+table = NetworkTables.getTable('SmartDashboard')
+pacdrive.PacInitialize()
+
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+
 while True:
     value=0
     for i, v in enumerate(buttons):
@@ -40,6 +53,10 @@ while True:
     
     flag = '{:04X}'.format(value)
     subprocess.Popen(["lightvalues.exe", flag], shell=True).wait()
+    pacdrive.PacSetLEDStates(0, value)
+    time.sleep(0.005)
+
+PacShutdown(0)
 
 ctable = NetworkTables.getTable('limelight')
 while True:
