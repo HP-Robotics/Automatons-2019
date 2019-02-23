@@ -61,8 +61,13 @@ public class Robot extends TimedRobot {
   public static final int CARGO_LEVEL3 = 9570;
   public static final int HOP_ELEVATOR = 700;
 
-  final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
-  final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
+  //ANTI-FRANK
+  /*final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
+  final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;*/
+
+  //PRO-FRANK
+  final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (24.0/60.0) * (1.0/3.0) * (1.0/256.0)*(156.0/160.0);
+	final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
   
   
 
@@ -91,11 +96,23 @@ public class Robot extends TimedRobot {
   public final static double elevator_max_a = 2080;
   public final static double elevator_max_v = 5555;
 
-  public final static double driveP = 0.5;
+  final double driveP = 0.3+0.4;
+	final double driveI = 0.005+0.01;
+	final double driveD = 1.0;
+	final double drivekV = 0.00246*1.15;
+  final double drivekA = 0.0108;
+  final double drivetkA = 0.044;
+  final double drivetkV = 0.178;
+  
+  //ANTI-FRANK
+  /*public final static double driveP = 0.5;
   public final static double driveI = 0.05;
   public final static double driveD = 1.5;
   public static final double drivekV = 0.0108;
-  public static final double driveKA = 0.002829;
+  public static final double drivekA = 0.002829;
+  final double drivetkA = 0.0;
+  final double drivetkV = 0.0;
+  */
   // 38.1 is about 180 degrees, 18.4 is about 90
   public boolean hatchDown = false;
   public boolean calibrating = false;
@@ -272,15 +289,33 @@ public class Robot extends TimedRobot {
     elevatorButtons = new ButtonGrouper(elevatorButtonArray, lb);
 
     winchDown = new DigitalInput(9);
-    topLeft = new TalonSRX(10);
+    //ANTI-FRANK
+    /*topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
-    bottomRight = new TalonSRX(13);
+    bottomRight = new TalonSRX(13);*/
 
-    driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
-    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);
+    //PRO-FRANK
+    topLeft = new TalonSRX(1);
+    topLeft.setInverted(true);
+    bottomLeft = new TalonSRX(2);
+    bottomLeft.setInverted(true);
+    topRight = new TalonSRX(3);
+    topRight.setInverted(true);
+    bottomRight = new TalonSRX(4);
+    bottomRight.setInverted(true);
+
+    //ANTI-FRANK
+    /*driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
+    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);*/
     elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X);
     winchEnc = new Encoder(21,22,false, EncodingType.k4X);
+
+    //PRO-FRANK
+    driveLeftEnc = new Encoder(2, 3, false, Encoder.EncodingType.k4X);
+		driveLeftEnc.setDistancePerPulse(1);
+		driveRightEnc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
+		driveRightEnc.setDistancePerPulse(1);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
     hatchPot = new AnalogPotentiometer(4, 270, 0); /* 2700 Max, 2610 Min */
@@ -296,7 +331,10 @@ public class Robot extends TimedRobot {
     roller = new TalonSRX(30);
     leftSDS = new TalonSRX(40);
     rightSDS = new TalonSRX(22);
-    winch = new TalonSRX(3);
+    //ANTI-FRANK
+    //winch = new TalonSRX(3);
+    //PRO-FRANK
+    winch = new TalonSRX(59);
     hatch = new TalonSRX(31);
     elevator = new TalonSRX(21);
     //elevator = new VictorSPX(0);
@@ -319,8 +357,8 @@ public class Robot extends TimedRobot {
     elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
     elevatorController.setProtect(-0.1, 0.2, 100);
-    //leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
-    //rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, driveKA, drivekV, 0, 0, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
+    leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
+    rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
 
 
     
@@ -618,27 +656,27 @@ public class Robot extends TimedRobot {
       //leftController.setPID(SmartDashboard.getNumber("P", 0), SmartDashboard.getNumber("I", 0), SmartDashboard.getNumber("D", 0));
       if(calibrateButton.on()){
           if(calibrateButton.changed()) {
-            /*driveRightEnc.reset();
+            driveRightEnc.reset();
             driveLeftEnc.reset();
-            //leftController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
-            //rightController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
+            leftController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
+            rightController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
             
             //leftController.configureTrajectory(shiftLeftTraj.getLeftTrajectory(), false);
             //rightController.configureTrajectory(shiftLeftTraj.getRightTrajectory(), false);
 
             rightController.enable();
             leftController.enable();
-            System.out.println("enable" + SmartDashboard.getNumber("Setpoint", 0.0));*/
+            System.out.println("enable" + SmartDashboard.getNumber("Setpoint", 0.0));
 
-            elevator.set(ControlMode.PercentOutput, SmartDashboard.getNumber("Setpoint",0.0));
+            //elevator.set(ControlMode.PercentOutput, SmartDashboard.getNumber("Setpoint",0.0));
 
           }
           
         }else if (calibrateButton.changed()&& !calibrateButton.on()){
-          /*rightController.disable();
+          rightController.disable();
           leftController.disable();
-          System.out.println("DISABLE");*/
-          elevator.set(ControlMode.PercentOutput, 0.0);
+          System.out.println("DISABLE");
+          //elevator.set(ControlMode.PercentOutput, 0.0);
       }
 
       /*if (hatchPot.get() <= 1500 && hatchPot.get() >= 3500) {
