@@ -51,8 +51,6 @@ while True:
         if btable.getBoolean(v[0], v[1]) == True:
             value |= (1 << i)
     
-    flag = '{:04X}'.format(value)
-    subprocess.Popen(["lightvalues.exe", flag], shell=True).wait()
     pacdrive.PacSetLEDStates(0, value)
     time.sleep(0.005)
 
