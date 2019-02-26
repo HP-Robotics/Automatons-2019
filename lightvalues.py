@@ -40,24 +40,22 @@ print("Connected!")
 
 btable = NetworkTables.getTable('SmartDashboard')
 table = NetworkTables.getTable('SmartDashboard')
+ctable = NetworkTables.getTable('limelight')
 pacdrive.PacInitialize()
 
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 while True:
+    # Button Box
     value=0
     for i, v in enumerate(buttons):
         if btable.getBoolean(v[0], v[1]) == True:
             value |= (1 << i)
     
     pacdrive.PacSetLEDStates(0, value)
-    time.sleep(0.005)
 
-PacShutdown(0)
-
-ctable = NetworkTables.getTable('limelight')
-while True:
+    # Limelight
     tarpos = ctable.getDouble('camtran', 0)
     x = tarpos[0]
     y = tarpos[1]
@@ -67,6 +65,8 @@ while True:
     roll = tarpos[5]
 
     print(tarpos)
+
+    time.sleep(0.005)
     
     #points = [
     #    pf.Waypoint(z, x, math.radians(theta)),   # Waypoint @ x=-4, y=-1, exit angle=-45 degrees
@@ -79,3 +79,7 @@ while True:
     #                            max_velocity=1.7,
     #                            max_acceleration=2.0,
     #                            max_jerk=60.0)
+
+
+PacShutdown(0)
+sys.exit(0)
