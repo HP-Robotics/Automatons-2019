@@ -77,7 +77,7 @@ public class AxisButton  {
 			//System.out.println("State not switched." + lastState + "    " + lastAxisState);
 		}
 		
-		held = abutton != 0.0;
+		held = fudgeAxis != 0.0;
 		lastState = state;
 		
 	}

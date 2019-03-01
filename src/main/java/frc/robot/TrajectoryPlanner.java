@@ -29,6 +29,11 @@ public class TrajectoryPlanner {
 		m_name = name;
 		
 	}
+
+	public TrajectoryPlanner(Trajectory t,  String name){
+		m_trajectory = t;
+		m_name = name;
+	}
 	
     public void generate() {
     	Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC, Trajectory.Config.SAMPLES_HIGH, 0.005, m_maxV, m_maxA, m_maxJ);

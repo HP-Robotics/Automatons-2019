@@ -2,15 +2,18 @@ package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.wpilibj.PIDOutput;
 
 public class DrivePIDOutput implements PIDOutput {
 	
-    TalonSRX m;
-    TalonSRX m2;
+
+	/*CALYPSO IS VICTOR ATLAS IS TALON*/
+    VictorSPX m;
+    VictorSPX m2;
 	double mult;
-	public DrivePIDOutput(TalonSRX motor, TalonSRX motor2, double multiplier)  {
+	public DrivePIDOutput(VictorSPX motor, VictorSPX motor2, double multiplier)  {
         m = motor;
         m2 = motor2;
 		mult = multiplier;

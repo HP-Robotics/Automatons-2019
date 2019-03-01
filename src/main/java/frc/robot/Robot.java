@@ -7,14 +7,23 @@
 
 package frc.robot;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+
+import javax.swing.text.Segment;
+
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -22,6 +31,8 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CounterBase.EncodingType;
 import edu.wpi.first.wpilibj.interfaces.Potentiometer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import jaci.pathfinder.Pathfinder;
+import jaci.pathfinder.Trajectory;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -65,14 +76,16 @@ public class Robot extends TimedRobot {
   public static final int HOP_ELEVATOR = 700;
 
   //ANTI-FRANK
-  /*final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
-  final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;*/
+  final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
+  final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
 
   //PRO-FRANK
-  final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (24.0/60.0) * (1.0/3.0) * (1.0/256.0)*(156.0/160.0);
-	final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
+  //final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (24.0/60.0) * (1.0/3.0) * (1.0/256.0)*(156.0/160.0);
+	//final static double DRIVE_INCH_TO_ENC = 1/DRIVE_ENC_TO_INCH;
   
   NetworkTable table;
+  public int seqNumber = 1;
+  public boolean trajStarted = false;
   
   public boolean isUsingIntake;
 	
@@ -99,32 +112,50 @@ public class Robot extends TimedRobot {
   public final static double elevator_max_a = 2080;
   public final static double elevator_max_v = 5555;
 
-  final double driveP = 0.3+0.4;
+  /*final double driveP = 0.3+0.4;
 	final double driveI = 0.005+0.01;
 	final double driveD = 1.0;
 	final double drivekV = 0.00246*1.15;
   final double drivekA = 0.0108;
   final double drivetkA = 0.044;
-  final double drivetkV = 0.178;
+  final double drivetkV = 0.178;*/
   
-  //ANTI-FRANK
+  //ATLAS
   /*public final static double driveP = 0.5;
   public final static double driveI = 0.05;
   public final static double driveD = 1.5;
   public static final double drivekV = 0.0108;
   public static final double drivekA = 0.002829;
   final double drivetkA = 0.0;
+  final double drivetkV = 0.0;*/
+
+
+  //CALYPSO
+  public final static double driveP = 0.5;
+  public final static double driveI = 0.05;
+  public final static double driveD = 0.5;
+  public static final double drivekV = 0.0108;
+  public static final double drivekA = 0.002829;
+  final double drivetkA = 0.0;
   final double drivetkV = 0.0;
-  */
+  
   // 38.1 is about 180 degrees, 18.4 is about 90
   public boolean hatchDown = false;
   public boolean calibrating = false;
   public boolean pidTuning = false;
 
-  public TalonSRX topRight;
+  //ATLAS
+  /*public TalonSRX topRight;
   public TalonSRX topLeft;
   public TalonSRX bottomRight;
-  public TalonSRX bottomLeft;
+  public TalonSRX bottomLeft;*/
+
+  //CALYPSO
+  public VictorSPX topRight;
+  public VictorSPX topLeft;
+  public VictorSPX bottomRight;
+  public VictorSPX bottomLeft;
+
 
   public Encoder driveLeftEnc;
   public Encoder driveRightEnc;
@@ -138,16 +169,18 @@ public class Robot extends TimedRobot {
   public Joystick driverStick2;
   public Joystick operatorBox;
 
-  public TalonSRX roller;
+  //public TalonSRX roller; //ATLAS
+  public VictorSPX roller; //CALYPSO
   public TalonSRX leftSDS;
-  public TalonSRX rightSDS;
+  //public TalonSRX rightSDS; //ATLAS
+  public VictorSPX rightSDS; //CALYPSO
 
   public TalonSRX hatch;
-  public TalonSRX elevator;
+  //public TalonSRX elevator;
   //public VictorSPX elevator;
-  public TalonSRX winch;
+  //public TalonSRX winch;
 
-  public DigitalInput winchDown;
+  //public DigitalInput winchDown;
 
   public Button thumb1;
   public Button trigger1;
@@ -170,7 +203,6 @@ public class Robot extends TimedRobot {
 
 
   public Button resetButton;
-  public Button magicButton;
   public Button hatch1;
   public Button hatch2;
   public Button hatch3;
@@ -184,6 +216,7 @@ public class Robot extends TimedRobot {
   public Button shipHatch;
   public Button shipCargo;
  
+  public AxisButton magicButton;
   public AxisButton sdsOperator;
   public double sdsState = 0;
 
@@ -216,6 +249,12 @@ public class Robot extends TimedRobot {
   TrajectoryPlanner racetrackStartTraj;
   TrajectoryPlanner racetrackTurnTraj;
   TrajectoryPlanner shiftLeftTraj;
+
+  // PRO FRANK ONLY
+	//DoubleSolenoid driveSolenoid;
+  //Compressor compressor;
+  //DoubleSolenoid.Value lowGear = DoubleSolenoid.Value.kForward;
+
 
   /**
    * This function is run when the robot is first started up and should be
@@ -285,83 +324,106 @@ public class Robot extends TimedRobot {
     hatchToggle = new Button(operatorBox, 1, "Hatch Toggle"); // change key
     //sdsIn and sdsOut are actually joysticks, so is magic button
     sdsOperator = new AxisButton(operatorBox, 0, "SDS Switch");
+    magicButton = new AxisButton(operatorBox, 1, "Magic Button");
 
 
     lb = new LiteButton();
     Button[] elevatorButtonArray =  {cargo3, cargo2, cargo1, hatch3, hatch2, hatch1, shipCargo, shipHatch};
     elevatorButtons = new ButtonGrouper(elevatorButtonArray, lb);
 
-    winchDown = new DigitalInput(9);
+    //winchDown = new DigitalInput(9);
     //ATLAS
     /*topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
     bottomRight = new TalonSRX(13);*/
 
+    //CALYPSO
+    topLeft = new VictorSPX(10);
+    bottomLeft = new VictorSPX(11);
+    topRight = new VictorSPX(12);
+    bottomRight = new VictorSPX(13);
+
     //PRO-FRANK
-    topLeft = new TalonSRX(1);
+    /*topLeft = new TalonSRX(1);
     topLeft.setInverted(true);
     bottomLeft = new TalonSRX(2);
     bottomLeft.setInverted(true);
     topRight = new TalonSRX(3);
     topRight.setInverted(true);
     bottomRight = new TalonSRX(4);
-    bottomRight.setInverted(true);
+    bottomRight.setInverted(true);*/
 
     //ATLAS
-    /*driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
-    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);*/
-    elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X);
+   // driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
+   //driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);
+
+    /*CALYPSO ONLY, FLIP THE RIGHT ONE ON ATLAS REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE */
+    driveLeftEnc = new Encoder(10, 11, false, EncodingType.k4X);
+    driveRightEnc = new Encoder(13, 12, true, EncodingType.k4X);
+    //elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X);
     winchEnc = new Encoder(21,22,false, EncodingType.k4X);
 
     //PRO-FRANK
-    driveLeftEnc = new Encoder(2, 3, false, Encoder.EncodingType.k4X);
-		driveLeftEnc.setDistancePerPulse(1);
-		driveRightEnc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
-		driveRightEnc.setDistancePerPulse(1);
+    //driveLeftEnc = new Encoder(2, 3, false, Encoder.EncodingType.k4X);
+		//driveLeftEnc.setDistancePerPulse(1);
+		//driveRightEnc = new Encoder(0, 1, true, Encoder.EncodingType.k4X);
+		//driveRightEnc.setDistancePerPulse(1);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
-    hatchPot = new AnalogPotentiometer(4, 270, 0); /* 2700 Max, 2610 Min */
+    hatchPot = new AnalogPotentiometer(0, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 9 CALYPSO
 
     //AnalogInput ai1 = new AnalogInput(0);
     //AnalogInput ai2 = new AnalogInput(2);
 
     //winch = new AnalogPotentiometer(ai1, 360, 30);
     //hatchPot = new AnalogPotentiometer(ai2, 360, 30);
-    
 
-
-    roller = new TalonSRX(30);
+    //ATLAS
+    /*roller = new TalonSRX(30);
     leftSDS = new TalonSRX(40);
-    rightSDS = new TalonSRX(22);
+    rightSDS = new TalonSRX(22);*/
+
     //ANTI-FRANK
     //winch = new TalonSRX(3);
     //PRO-FRANK
-    winch = new TalonSRX(59);
+    //winch = new TalonSRX(59);
     hatch = new TalonSRX(31);
-    elevator = new TalonSRX(21);
+    //elevator = new TalonSRX(21);
     //elevator = new VictorSPX(0);
+
+    //CALYPSO
+    roller = new VictorSPX(30);
+    leftSDS = new TalonSRX(40);
+    rightSDS = new VictorSPX(22);
 
     SmartDashboard.putNumber("P", 0.7);
     SmartDashboard.putNumber("I", 0.015);
     SmartDashboard.putNumber("D", 1.0);
     SmartDashboard.putNumber("Setpoint", 0.0);
 
+    SmartDashboard.putNumber("Trajectory Request", 0);
+
     hatchPIDOutput = new TalonPIDOutput(hatch, -1.0);
-    winchPIDOutput = new TalonPIDOutput(winch, 1.0);
-    elevatorPIDOutput = new TalonPIDOutput(elevator, -1.0);
+    /*winchPIDOutput = new TalonPIDOutput(winch, 1.0);
+    elevatorPIDOutput = new TalonPIDOutput(elevator, -1.0);*/
     rightPIDOutput = new DrivePIDOutput(topRight, bottomRight, -1.0); 
     leftPIDOutput = new DrivePIDOutput(topLeft, bottomLeft, 1.0);
 
     leftInInches = new DrivePIDSourceInches(driveLeftEnc);
     rightInInches = new DrivePIDSourceInches(driveRightEnc);
+
     hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.01, "hatch.csv", this);
-    winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
+    /*winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
     elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
-    elevatorController.setProtect(-0.1, 0.2, 100);
-    leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.01, "left.csv", this);
-    rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.01, "right.csv", this);
+    elevatorController.setProtect(-0.1, 0.2, 100);*/
+    leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.005, "left.csv", this);
+    rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.005, "right.csv", this);
+
+    // PRO FRANK ONLY
+    //driveSolenoid = new DoubleSolenoid(2, 3);
+		//compressor = new Compressor(0);
 
 
     
@@ -410,7 +472,11 @@ public class Robot extends TimedRobot {
     //elevator.set(ControlMode.PercentOutput, 0.0);
     //leftSDS.set(ControlMode.PercentOutput, 0.0);
     //rightSDS.set(ControlMode.PercentOutput, 0.0);
-    elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
+    //elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
+
+    // PRO FRANK
+    //driveSolenoid.set(lowGear);
+
 
   }
     
@@ -431,11 +497,13 @@ public class Robot extends TimedRobot {
       return;
     }
     hatchLogic();
-    winchLogic();
+    //winchLogic();
     intakeLogic();
     magicLogic();
-    drivingLogic();
-    elevatorLogic();
+    if(!trajStarted){
+      drivingLogic();
+    }
+    //elevatorLogic();
     
   }
 
@@ -470,6 +538,7 @@ public class Robot extends TimedRobot {
     winchToggleButton.update();
     elevatorButtons.update();
     sdsOperator.update();
+    magicButton.update();
 
   }
   public void intakeLogic(){
@@ -517,11 +586,35 @@ public class Robot extends TimedRobot {
   }
 
   public void magicLogic(){
-    if(operatorBox.getRawAxis(1)==-1) {
-      SmartDashboard.putBoolean("Magic Button", true);
+    if(magicButton.held()) {
+      if(magicButton.changed()){
+        seqNumber++;
+        SmartDashboard.putNumber("Trajectory Request", seqNumber);
+        trajStarted = false;
+      } else{
+          if(!trajStarted){
+            if(SmartDashboard.getNumber("Trajectory Response", 0) == seqNumber){
+              Trajectory t = deserializeTraj();
+              TrajectoryPlanner tp = new TrajectoryPlanner(t, "Magic");
+              tp.regenerate();
+              driveRightEnc.reset();
+              driveLeftEnc.reset();
+              leftController.configureTrajectory(tp.getLeftTrajectory(), false);
+              rightController.configureTrajectory(tp.getRightTrajectory(), false);
+              leftController.enable();
+              rightController.enable();
+              trajStarted = true;
+            }
+          }
+      }
+        
       // TODO Magic code
     } else {
-      SmartDashboard.putBoolean("Magic Button", false);
+        if(trajStarted){
+          rightController.disable();
+          leftController.disable();
+          trajStarted = false;
+        }
       // TODO Disable Magic Code
     }
   }
@@ -548,7 +641,7 @@ public class Robot extends TimedRobot {
     else{
       elevator.set(ControlMode.PercentOutput, 0.0);
     }*/
-    if(winchDown.get()){
+    /*if(winchDown.get()){*/ //COMMENT IN FOR ATLAS
       if((hatch1.changed()&&hatch1.on())|| (shipHatch.changed()&&shipHatch.on())|| (hatchFeeder.changed()&&hatchFeeder.on()))
       {
         elevatorController.configureGoal(HATCH_LEVEL1-elevatorEnc.get(), elevator_max_v, elevator_max_a, false);
@@ -573,7 +666,7 @@ public class Robot extends TimedRobot {
       {
         elevatorController.configureGoal(CARGO_LEVEL3-elevatorEnc.get(), elevator_max_v, elevator_max_a,true);
       }
-    }
+  //}
     
   }
 
@@ -619,36 +712,38 @@ public class Robot extends TimedRobot {
 
   public void dashboardPuts(){
     SmartDashboard.putNumber("hatchPot", hatchPot.get());
-    SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
+    //SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
     SmartDashboard.putNumber("winchEnc", winchEnc.get());
     SmartDashboard.putNumber("left enc", driveLeftEnc.get());
     SmartDashboard.putNumber("right enc", driveRightEnc.get());
     SmartDashboard.putNumber("left in", leftInInches.pidGet());
     SmartDashboard.putNumber("right in", rightInInches.pidGet());
-    SmartDashboard.putNumber("elevator set", elevatorController.getSetpoint());
-    SmartDashboard.putBoolean("limit switch", winchDown.get());
-    SmartDashboard.putNumber("elevator current", elevator.getOutputCurrent());
+    //SmartDashboard.putNumber("elevator set", elevatorController.getSetpoint());
+    //SmartDashboard.putBoolean("limit switch", winchDown.get());
+    //SmartDashboard.putNumber("elevator current", elevator.getOutputCurrent());
   }
   public void calibrateNow(SnazzyMotionPlanner p) {
     if(calibrateButton.changed()&& calibrateButton.on()){
-        /*driveRightEnc.reset();
+        driveRightEnc.reset();
         driveLeftEnc.reset();
         leftController.enable(); 
         rightController.enable(); 
         leftController.startCalibration();
         rightController.startCalibration();
-        */
+        
+        /*
         winchEnc.reset();
         p.enable();
         winchController.startCalibration();
+        */
         System.out.println("enabel");
 				
     }else if (calibrateButton.changed()&& !calibrateButton.on()){
-      /*
+      
       leftController.disable();
       rightController.disable();
-      */
-      p.disable();
+      /*
+      p.disable();*/
       System.out.println("disabel");
     }
     //System.out.println(calibrateButton.changed()+" " +calibrateButton.on());
@@ -663,7 +758,7 @@ public class Robot extends TimedRobot {
 
         table = NetworkTableInstance.getDefault().getTable("limelight");
         
-        double[] defaultValue = new double[0];
+        double[] defaultValue = new double[6];
         double[] tarpos = table.getEntry("camtran").getDoubleArray(defaultValue);
         //ystem.out.println(table.getEntry("camtran"));
 
@@ -671,7 +766,7 @@ public class Robot extends TimedRobot {
 
         double[][] dynamoPlan = {{0,0,0},{-tarpos[2]-40, tarpos[0]-6, tarpos[4]}};
         double[][] fakePlan = {{0,0,0},{30, 4, 15}};
-        dynamo = new TrajectoryPlanner(dynamoPlan, 50, 50, 50, "vision.csv");
+        dynamo = new TrajectoryPlanner(fakePlan, 50, 50, 50, "vision.csv");
 
         System.out.println(-tarpos[2]-40 + ", " + tarpos[0] + ", " + tarpos[4]);
 
@@ -683,7 +778,9 @@ public class Robot extends TimedRobot {
         //driveLeftEnc.reset();
         //leftController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
         //rightController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
-            
+            System.out.println(dynamo.getLeftTrajectory().length());
+            driveLeftEnc.reset();
+            driveRightEnc.reset();
             leftController.configureTrajectory(dynamo.getLeftTrajectory(), false);
             rightController.configureTrajectory(dynamo.getRightTrajectory(), false);
 
@@ -707,6 +804,43 @@ public class Robot extends TimedRobot {
       }*/
     }
 	
-	
+  public Trajectory deserializeTraj(){
+    Trajectory traj;
+    try {
+      System.out.println("KAMALA IS A COP");
+      System.out.println(SmartDashboard.getString("triplesee", "").length());
+
+      BufferedWriter writer = new BufferedWriter(new FileWriter("/home/lvuser/traj.csv"));
+      writer.write(SmartDashboard.getString("triplesee", ""));
+      writer.close();
+      traj = Pathfinder.readFromCSV(new File("/home/lvuser/traj.csv"));
+
+      System.out.println(traj.length());
+
+    } catch(Exception e) {
+      traj = null;
+    }
+    return traj;
+  }
+  
+  public Trajectory enhanceTrajectory(Trajectory t){
+    int i;
+    Trajectory outTraj = new Trajectory(((t.length()-1)*10)+1);
+    for (i =0; i<t.length()-1;i++){
+        for(int j = 0; j<10; j++){
+          double newdt = t.segments[i].dt+((t.segments[i+1].dt-t.segments[i].dt)/10)*j;
+          double newx = t.segments[i].x+((t.segments[i+1].x-t.segments[i].x)/10)*j;
+          double newy = t.segments[i].y+((t.segments[i+1].y-t.segments[i].y)/10)*j;
+          double newpos = t.segments[i].position+((t.segments[i+1].position-t.segments[i].position)/10)*j;
+          double newv = t.segments[i].velocity+((t.segments[i+1].velocity-t.segments[i].velocity)/10)*j;
+          double newaccel = t.segments[i].acceleration+((t.segments[i+1].acceleration-t.segments[i].acceleration)/10)*j;
+          double newjerk = t.segments[i].jerk+((t.segments[i+1].jerk-t.segments[i].jerk)/10)*j;
+          double newheading = t.segments[i].heading+((t.segments[i+1].heading-t.segments[i].heading)/10)*j;
+          outTraj.segments[i*10+j] = new Trajectory.Segment(newdt, newx, newy, newpos, newv, newaccel, newjerk, newheading);
+        }
+    }
+    outTraj.segments[i*10] = t.segments[i];
+    return outTraj;
+  }
 
 }
