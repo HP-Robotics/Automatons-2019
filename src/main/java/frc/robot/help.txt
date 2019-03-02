@@ -1,7 +1,10 @@
-PID tune elevator, hatch, winch
-Get all drivetrain coeeficients (ka, kv, pid things)
-Motion planning on hatch
-Test robot periodic
-Code brief mac and clean-up
-Button box python git
-Button box lighting class
+Rebrain Calypso [Get USB]
+Windows Update, postpone any for 30 days. [DATA EXPUNGED]
+Move forward Button. [Done]
+Turn Towards Light.
+Dashboard + driver button for elevator hop option [Done]
+~Optional~
+Motion trajectory for moving to rocket in sandstorm
+Turny limelight thing
+Move to take us off ledge -- on Button
+Let drivers move elevator between upper levels even if winch is not down [Done]

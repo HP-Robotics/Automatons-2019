@@ -199,6 +199,7 @@ public class Robot extends TimedRobot {
   public Button hatchOutButton2;
   public Button calibrateButton;
   public Button winchToggleButton;
+  public Button elevatorHopButton;
 
 
   public Button resetButton;
@@ -300,16 +301,17 @@ public class Robot extends TimedRobot {
     xButton2 = new Button(driverStick2, 3, "X");
     yButton2 = new Button(driverStick2, 4, "Y");
     trigger2 = new Button(driverStick2, 1, "SDS In");
-    //thumb2 = new Button(driverStick2, 2, "SDS Out");
+    thumb2 = new Button(driverStick2, 2, "SDS Out");
 
     calibrateButton = new Button(driverStick1, 14, "Lib Owned");
+    elevatorHopButton = new Button(driverStick2, 14, "Hop");
 
     winchToggleButton = new Button(driverStick1, 2, "Winch Toggle");
     isUsingIntake = false;
 
     //hatchInButton1 = new Button(driverStick1, 2, "Hatch In");
 
-    hatchInButton2 = new Button(driverStick2, 2, "Hatch In");
+    hatchInButton2 = new Button(driverStick2, 4, "Hatch In");
 
     resetButton = new Button(operatorBox, 4, "Reset Button");
     shipCargo = new Button(operatorBox, 11, "Cargo Ship Cargo");
@@ -407,6 +409,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Trajectory Request", 0);
 
+    SmartDashboard.putBoolean("Elevator Hop", true);
+
     hatchPIDOutput = new TalonPIDOutput(hatch, -1.0);
     winchPIDOutput = new TalonPIDOutput(winch, 1.0);
     //elevatorPIDOutput = new TalonPIDOutput(elevator, -1.0); //ATLAS
@@ -459,7 +463,10 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     //ATLAS
     //TODO - Smartdashboard?  Button?
-    elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
+
+    if (SmartDashboard.getBoolean("Elevator Hop", true)) {
+      elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
+    }
   }
 
   /**
@@ -507,6 +514,7 @@ public class Robot extends TimedRobot {
     if(!trajStarted){
       drivingLogic();
     }
+
     //elevatorLogic(); //ATLAS
     
   }
@@ -531,7 +539,7 @@ public class Robot extends TimedRobot {
     xButton2.update();
     yButton2.update();
     trigger2.update();
-    //thumb2.update();
+    thumb2.update();
     //hatchInButton1.update();
     //hatchOutButton1.update();
     hatchInButton2.update();
@@ -625,32 +633,30 @@ public class Robot extends TimedRobot {
 
   public void drivingLogic(){
     // TODO - hold a button to allow drive outputs to drive together
-    topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
-    bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
-    topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
-    bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+    if (thumb2.held()) {
+      topLeft.set(ControlMode.PercentOutput, -driverStick2.getRawAxis(1));
+      bottomLeft.set(ControlMode.PercentOutput, -driverStick2.getRawAxis(1));
+      topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+      bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+    } else {
+      topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
+      bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
+      topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+      bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+    }
   }
 
   public void elevatorLogic(){
     if (!elevatorController.isEnabled()){
       elevatorController.enable();
     }
-
-    
-    /*if(aButton1.held()){
-      elevator.set(ControlMode.PercentOutput, 0.4);
-    }
-    else if (bButton1.held()){
-      elevator.set(ControlMode.PercentOutput, -0.4);
-    }
-    else{
-      elevator.set(ControlMode.PercentOutput, 0.0);
-    }*/
     //TODO - Allow elevator to move among high levels even if the winch is not down
-    /*if(winchDown.get()){*/ //COMMENT IN FOR ATLAS
-      if((hatch1.changed()&&hatch1.on())|| (shipHatch.changed()&&shipHatch.on())|| (hatchFeeder.changed()&&hatchFeeder.on()))
+    /*if(winchDown.get()|| elevatorEnc.get()>CARGO_LEVEl1){*/ //COMMENT IN FOR ATLAS
+      if((hatch1.changed()&&hatch1.on())|| (shipHatch.changed()&&shipHatch.on())|| (hatchFeeder.changed()&&hatchFeeder.on()) )
       {
+        //if(winchDown.get()){
         elevatorController.configureGoal(HATCH_LEVEL1-elevatorEnc.get(), elevator_max_v, elevator_max_a, false);
+        //}
       } 
       else if(cargo1.changed()&&cargo1.on() )
       {
@@ -671,6 +677,10 @@ public class Robot extends TimedRobot {
       else if(cargo3.changed()&&cargo3.on())
       {
         elevatorController.configureGoal(CARGO_LEVEL3-elevatorEnc.get(), elevator_max_v, elevator_max_a,true);
+      }
+      else if(elevatorEnc.get() < CARGO_LEVEL1 && (resetButton.changed()|| elevatorHopButton.changed()))
+      {
+        elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a, false);
       }
   //}
     
