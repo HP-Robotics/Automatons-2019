@@ -18,7 +18,8 @@ public class TrajectoryPlanner {
 	private double m_maxA;
 	private double m_maxV;
 	private double m_maxJ;
-	private double wheelbase =  25.125 + 3.05;// ATLAS 21.75+2.0;  // 2.9 pretty good
+	private double wheelbase =  21.75+2.0;
+	//private double wheelbase =  25.125 + 3.05;// FRANK
 	private String m_name;
 	
 	public TrajectoryPlanner(double[][] ap, double max_v, double max_a, double max_j, String name) {

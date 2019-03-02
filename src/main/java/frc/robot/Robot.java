@@ -49,7 +49,6 @@ public class Robot extends TimedRobot {
   public TalonPIDOutput winchPIDOutput;
   public SnazzyMotionPlanner elevatorController;
   public TalonPIDOutput elevatorPIDOutput;
-  //public VictorPIDOutput elevatorPIDOutput;
   public SnazzyMotionPlanner leftController;
   public SnazzyMotionPlanner rightController;
   public DrivePIDOutput rightPIDOutput;
@@ -112,6 +111,7 @@ public class Robot extends TimedRobot {
   public final static double elevator_max_a = 2080;
   public final static double elevator_max_v = 5555;
 
+  //FRANK
   /*final double driveP = 0.3+0.4;
 	final double driveI = 0.005+0.01;
 	final double driveD = 1.0;
@@ -176,11 +176,10 @@ public class Robot extends TimedRobot {
   public VictorSPX rightSDS; //CALYPSO
 
   public TalonSRX hatch;
-  //public TalonSRX elevator;
-  //public VictorSPX elevator;
-  //public TalonSRX winch;
+  //public TalonSRX elevator; //ATLAS
+  public TalonSRX winch;
 
-  //public DigitalInput winchDown;
+  //public DigitalInput winchDown;  //ATLAS
 
   public Button thumb1;
   public Button trigger1;
@@ -237,6 +236,7 @@ public class Robot extends TimedRobot {
   public LiteButton lb;
   public Button[] elevatorButtonArray;
 
+  // TODO - Add trajectories for sandstorm moves
   double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
   double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
   double[][] shiftLeft = {{0, 0, 0},{36, 6, 0}};
@@ -331,8 +331,8 @@ public class Robot extends TimedRobot {
     Button[] elevatorButtonArray =  {cargo3, cargo2, cargo1, hatch3, hatch2, hatch1, shipCargo, shipHatch};
     elevatorButtons = new ButtonGrouper(elevatorButtonArray, lb);
 
-    //winchDown = new DigitalInput(9);
     //ATLAS
+    //winchDown = new DigitalInput(9);
     /*topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
@@ -361,8 +361,11 @@ public class Robot extends TimedRobot {
     /*CALYPSO ONLY, FLIP THE RIGHT ONE ON ATLAS REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE */
     driveLeftEnc = new Encoder(10, 11, false, EncodingType.k4X);
     driveRightEnc = new Encoder(13, 12, true, EncodingType.k4X);
-    //elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X);
-    winchEnc = new Encoder(21,22,false, EncodingType.k4X);
+
+    //elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X); //ATLAS
+    //winchEnc = new Encoder(21,22,false, EncodingType.k4X); //ATLAS
+    winchEnc = new Encoder(0,1,false, EncodingType.k4X);
+
 
     //PRO-FRANK
     //driveLeftEnc = new Encoder(2, 3, false, Encoder.EncodingType.k4X);
@@ -385,7 +388,7 @@ public class Robot extends TimedRobot {
     rightSDS = new TalonSRX(22);*/
 
     //ANTI-FRANK
-    //winch = new TalonSRX(3);
+    winch = new TalonSRX(32);  //ATLAS was 3
     //PRO-FRANK
     //winch = new TalonSRX(59);
     hatch = new TalonSRX(31);
@@ -405,8 +408,8 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Trajectory Request", 0);
 
     hatchPIDOutput = new TalonPIDOutput(hatch, -1.0);
-    /*winchPIDOutput = new TalonPIDOutput(winch, 1.0);
-    elevatorPIDOutput = new TalonPIDOutput(elevator, -1.0);*/
+    winchPIDOutput = new TalonPIDOutput(winch, 1.0);
+    //elevatorPIDOutput = new TalonPIDOutput(elevator, -1.0); //ATLAS
     rightPIDOutput = new DrivePIDOutput(topRight, bottomRight, -1.0); 
     leftPIDOutput = new DrivePIDOutput(topLeft, bottomLeft, 1.0);
 
@@ -414,10 +417,10 @@ public class Robot extends TimedRobot {
     rightInInches = new DrivePIDSourceInches(driveRightEnc);
 
     hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.01, "hatch.csv", this);
-    /*winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
-    elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
+    winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
+    /*elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
-    elevatorController.setProtect(-0.1, 0.2, 100);*/
+    elevatorController.setProtect(-0.1, 0.2, 100);*/ //ATLAS
     leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.005, "left.csv", this);
     rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.005, "right.csv", this);
 
@@ -454,6 +457,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    //ATLAS
+    //TODO - Smartdashboard?  Button?
     elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
   }
 
@@ -472,7 +477,6 @@ public class Robot extends TimedRobot {
     //elevator.set(ControlMode.PercentOutput, 0.0);
     //leftSDS.set(ControlMode.PercentOutput, 0.0);
     //rightSDS.set(ControlMode.PercentOutput, 0.0);
-    //elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
 
     // PRO FRANK
     //driveSolenoid.set(lowGear);
@@ -497,13 +501,13 @@ public class Robot extends TimedRobot {
       return;
     }
     hatchLogic();
-    //winchLogic();
+    winchLogic();
     intakeLogic();
     magicLogic();
     if(!trajStarted){
       drivingLogic();
     }
-    //elevatorLogic();
+    //elevatorLogic(); //ATLAS
     
   }
 
@@ -620,6 +624,7 @@ public class Robot extends TimedRobot {
   }
 
   public void drivingLogic(){
+    // TODO - hold a button to allow drive outputs to drive together
     topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
     topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
@@ -641,6 +646,7 @@ public class Robot extends TimedRobot {
     else{
       elevator.set(ControlMode.PercentOutput, 0.0);
     }*/
+    //TODO - Allow elevator to move among high levels even if the winch is not down
     /*if(winchDown.get()){*/ //COMMENT IN FOR ATLAS
       if((hatch1.changed()&&hatch1.on())|| (shipHatch.changed()&&shipHatch.on())|| (hatchFeeder.changed()&&hatchFeeder.on()))
       {
@@ -718,6 +724,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("right enc", driveRightEnc.get());
     SmartDashboard.putNumber("left in", leftInInches.pidGet());
     SmartDashboard.putNumber("right in", rightInInches.pidGet());
+    //ATLAS
     //SmartDashboard.putNumber("elevator set", elevatorController.getSetpoint());
     //SmartDashboard.putBoolean("limit switch", winchDown.get());
     //SmartDashboard.putNumber("elevator current", elevator.getOutputCurrent());
