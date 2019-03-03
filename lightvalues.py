@@ -8,10 +8,10 @@ import sys
 import signal
 
 # buttons[i][0] = name, buttons[i][1] = default value
-buttons = [["Reset Button", False], ["Hatch Level 3", False], ["Hatch Level 1", False], ["Hatch Level 2", False],
+buttons = [["SDS In", False], ["Hatch Level 3", False], ["Hatch Level 1", False], ["Hatch Level 2", False],
          ["Cargo Level 1", False], ["Cargo Level 2", False], ["Cargo Level 3", False], ["Cargo Ship Cargo", False],
-         ["Cargo Ship Hatch", False], ["Magic Button", False], ["SDS In", False],
-         ["SDS Out", False], ["Ground Intake", False], ["Hatch Feeder", False], ["nil", False], ["nil", False]]
+         ["Cargo Ship Hatch", False], ["SDS Out", False], ["Reset Button", False],
+         ["Magic Button", False], ["Ground Intake", False], ["Hatch Feeder", False], ["nil", False], ["nil", False]]
 
 xvalues = [0.0, 0.0, 0.0, 0.0, 0.0]
 zvalues = [0.0, 0.0, 0.0, 0.0, 0.0]
