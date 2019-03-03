@@ -11,8 +11,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 
-import javax.swing.text.Segment;
-
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.VictorSPX;
@@ -51,10 +49,16 @@ public class Robot extends TimedRobot {
   public TalonPIDOutput elevatorPIDOutput;
   public SnazzyMotionPlanner leftController;
   public SnazzyMotionPlanner rightController;
+  public SnazzyPIDCalculator spinCalculator;
   public DrivePIDOutput rightPIDOutput;
   public DrivePIDOutput leftPIDOutput;
   public DrivePIDSourceInches leftInInches;
   public DrivePIDSourceInches rightInInches;
+  public TurnPIDOutput spinOutput;
+  public LimelightAnglePIDSource spinInput;
+
+  private double addToLeft = 0.0;
+  private double addToRight = 0.0;
 
   public static final int DRIVER_STICK1 = 0;
   public static final int DRIVER_STICK2 = 1;
@@ -110,6 +114,10 @@ public class Robot extends TimedRobot {
   public static final double elevatorkV = 0;//0.00183371;
   public final static double elevator_max_a = 2080;
   public final static double elevator_max_v = 5555;
+
+  public static final double spinP = 0.05;
+  public static final double spinI = 0.00001;
+  public static final double spinD = 0.2;
 
   //FRANK
   /*final double driveP = 0.3+0.4;
@@ -402,9 +410,9 @@ public class Robot extends TimedRobot {
     leftSDS = new TalonSRX(40);
     rightSDS = new VictorSPX(22);
 
-    SmartDashboard.putNumber("P", 0.7);
-    SmartDashboard.putNumber("I", 0.015);
-    SmartDashboard.putNumber("D", 1.0);
+    SmartDashboard.putNumber("P", 0.0);
+    SmartDashboard.putNumber("I", 0.0);
+    SmartDashboard.putNumber("D", 0.0);
     SmartDashboard.putNumber("Setpoint", 0.0);
 
     SmartDashboard.putNumber("Trajectory Request", 0);
@@ -420,6 +428,9 @@ public class Robot extends TimedRobot {
     leftInInches = new DrivePIDSourceInches(driveLeftEnc);
     rightInInches = new DrivePIDSourceInches(driveRightEnc);
 
+    spinOutput = new TurnPIDOutput();
+    spinInput = new LimelightAnglePIDSource();
+
     hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.01, "hatch.csv", this);
     winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
     /*elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
@@ -428,6 +439,8 @@ public class Robot extends TimedRobot {
     leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.005, "left.csv", this);
     rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.005, "right.csv", this);
 
+    spinCalculator = new SnazzyPIDCalculator(spinP, spinI, spinD, 0.0, spinInput, spinOutput, 0.02, "spin.csv");
+    spinCalculator.setOutputRange(-0.5, 0.5);
     // PRO FRANK ONLY
     //driveSolenoid = new DoubleSolenoid(2, 3);
 		//compressor = new Compressor(0);
@@ -487,8 +500,6 @@ public class Robot extends TimedRobot {
 
     // PRO FRANK
     //driveSolenoid.set(lowGear);
-
-
   }
     
   /** 
@@ -598,7 +609,7 @@ public class Robot extends TimedRobot {
     }*/
   }
 
-  public void magicLogic(){
+  public void eightMagicLogic(){
     if(magicButton.held()) {
       if(magicButton.changed()){
         seqNumber++;
@@ -632,18 +643,40 @@ public class Robot extends TimedRobot {
     }
   }
 
+  public void magicLogic() {
+    addToLeft = 0.0;
+    addToRight = 0.0;
+    if(!magicButton.held()) {
+      if(spinCalculator.isEnabled()) {
+        spinCalculator.disable();
+      }
+      return;
+    } 
+    if(!spinInput.isValid()) {
+      return;
+    }
+    if(!spinCalculator.isEnabled()) {
+      spinCalculator.enable();
+    }
+    //spinCalculator.setPID(SmartDashboard.getNumber("P", 0.0), SmartDashboard.getNumber("I", 0.0), SmartDashboard.getNumber("D", 0.0));
+    spinCalculator.calculate();
+    spinCalculator.m_pidOutput.pidWrite(spinCalculator.m_result);
+    addToLeft = -spinOutput.m_value;
+    addToRight = -spinOutput.m_value;
+  }
+
   public void drivingLogic(){
     // TODO - hold a button to allow drive outputs to drive together
     if (thumb2.held()) {
-      topLeft.set(ControlMode.PercentOutput, -driverStick2.getRawAxis(1));
-      bottomLeft.set(ControlMode.PercentOutput, -driverStick2.getRawAxis(1));
-      topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
-      bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+      topLeft.set(ControlMode.PercentOutput, -driverStick2.getRawAxis(1) + addToLeft);
+      bottomLeft.set(ControlMode.PercentOutput, -driverStick2.getRawAxis(1) + addToLeft);
+      topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1) + addToRight);
+      bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1) + addToRight);
     } else {
-      topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
-      bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1));
-      topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
-      bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1));
+      topLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1) + addToLeft);
+      bottomLeft.set(ControlMode.PercentOutput, -driverStick1.getRawAxis(1) + addToLeft);
+      topRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1) + addToRight);
+      bottomRight.set(ControlMode.PercentOutput, driverStick2.getRawAxis(1) + addToRight);
     }
   }
 

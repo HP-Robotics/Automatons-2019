@@ -1,7 +1,7 @@
 Rebrain Calypso [Get USB]
 Windows Update, postpone any for 30 days. [DATA EXPUNGED]
 Move forward Button. [Done]
-Turn Towards Light.
+Turn Towards Light. [Done]
 Dashboard + driver button for elevator hop option [Done]
 ~Optional~
 Motion trajectory for moving to rocket in sandstorm

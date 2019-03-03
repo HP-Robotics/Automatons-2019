@@ -62,57 +62,62 @@ signal.signal(signal.SIGTERM, signal_handler)
 while True:
     # Button Box
     value=0
+
+    if ctable.getNumber('tv', 0) == 1:
+        table.putBoolean("Magic Button", True)
+    else:
+        table.putBoolean("Magic Button", False)
     for i, v in enumerate(buttons):
         if table.getBoolean(v[0], v[1]) == True:
             value |= (1 << i)
     
     pacdrive.PacSetLEDStates(0, value)
 
-    loopNum += 1
-    if loopNum % 10 == 0:
-        tarpos = ctable.getNumberArray('camtran', [0,0,0,0,0,0])
+    # loopNum += 1
+    # if loopNum % 10 == 0:
+    #     tarpos = ctable.getNumberArray('camtran', [0,0,0,0,0,0])
 
-        xvalues.append(tarpos[0])
-        if len(xvalues) > sampleSize:
-            xvalues.pop(0)
+    #     xvalues.append(tarpos[0])
+    #     if len(xvalues) > sampleSize:
+    #         xvalues.pop(0)
 
-        if xvalues[-1] == 0.0:
-            xvalues = []
-            xavg = 0.0
-        elif len(xvalues) == sampleSize:
-            xavg = sum(xvalues)/len(xvalues)
+    #     if xvalues[-1] == 0.0:
+    #         xvalues = []
+    #         xavg = 0.0
+    #     elif len(xvalues) == sampleSize:
+    #         xavg = sum(xvalues)/len(xvalues)
 
-        zvalues.append(tarpos[2])
-        if len(zvalues) > sampleSize:
-            zvalues.pop(0)
+    #     zvalues.append(tarpos[2])
+    #     if len(zvalues) > sampleSize:
+    #         zvalues.pop(0)
 
-        if zvalues[-1] == 0.0:
-            zvalues = []
-            zavg = 0.0
-        elif len(zvalues) == sampleSize:
-            zavg = sum(zvalues)/len(zvalues)
+    #     if zvalues[-1] == 0.0:
+    #         zvalues = []
+    #         zavg = 0.0
+    #     elif len(zvalues) == sampleSize:
+    #         zavg = sum(zvalues)/len(zvalues)
 
-        thetavalues.append(tarpos[4])
-        if len(thetavalues) > sampleSize:
-            thetavalues.pop(0)
+    #     thetavalues.append(tarpos[4])
+    #     if len(thetavalues) > sampleSize:
+    #         thetavalues.pop(0)
 
-        if thetavalues[-1] == 0.0:
-            thetavalues = []
-            thetaavg = 0.0
-        elif len(thetavalues) == sampleSize:
-            thetaavg = sum(thetavalues)/len(thetavalues)
+    #     if thetavalues[-1] == 0.0:
+    #         thetavalues = []
+    #         thetaavg = 0.0
+    #     elif len(thetavalues) == sampleSize:
+    #         thetaavg = sum(thetavalues)/len(thetavalues)
 
-        if zavg != 0.0:
-            myangle = math.degrees(math.atan((xavg)/(-zavg)))
-        else:
-            myangle = 0.0
-        print("z {}, x {}, theta {}, jersangle {}".format(zavg, xavg, thetaavg, myangle))
-        #print(thetaavg - xavg)
+    #     if zavg != 0.0:
+    #         myangle = math.degrees(math.atan((xavg)/(-zavg)))
+    #     else:
+    #         myangle = 0.0
+    #     print("z {}, x {}, theta {}, jersangle {}".format(zavg, xavg, thetaavg, myangle))
+    #     #print(thetaavg - xavg)
 
-        if len(thetavalues) == sampleSize and len(zvalues) == sampleSize and len(xvalues) == sampleSize:
-            table.putBoolean("Magic Button", True)
-        else:
-            table.putBoolean("Magic Button", False)
+    #     if len(thetavalues) == sampleSize and len(zvalues) == sampleSize and len(xvalues) == sampleSize:
+    #         table.putBoolean("Magic Button", True)
+    #     else:
+    #         table.putBoolean("Magic Button", False)
 
 
     #print(tarpos)
