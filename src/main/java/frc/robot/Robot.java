@@ -195,6 +195,7 @@ public class Robot extends TimedRobot {
   public Button bButton1;
   public Button xButton1;
   public Button yButton1;
+  public Button rocketLeftButton;
   public Button thumb2;
   public Button trigger2;
   public Button aButton2;
@@ -249,6 +250,9 @@ public class Robot extends TimedRobot {
   double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
   double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
   double[][] shiftLeft = {{0, 0, 0},{36, 6, 0}};
+  double[][] rocketLeftPlan = {{0, 0, 0},{127.5, 95.7, 28.875}};
+
+  public boolean rocketLeftActive = false;
 
   public double[] winchArray = {0, /*923,*/ 2592};
   public int winchPos = 0;
@@ -258,6 +262,7 @@ public class Robot extends TimedRobot {
   TrajectoryPlanner racetrackStartTraj;
   TrajectoryPlanner racetrackTurnTraj;
   TrajectoryPlanner shiftLeftTraj;
+  TrajectoryPlanner rocketLeftTraj;
 
   // PRO FRANK ONLY
 	//DoubleSolenoid driveSolenoid;
@@ -273,12 +278,14 @@ public class Robot extends TimedRobot {
   public void robotInit() {
 
     
-		racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
+		/*racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
     racetrackStartTraj.generate();
     racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
     racetrackTurnTraj.generate();
     shiftLeftTraj = new TrajectoryPlanner(shiftLeft, 100, 100, 100, "shiftLeft");
-    shiftLeftTraj.generate();
+    shiftLeftTraj.generate();*/
+    rocketLeftTraj = new TrajectoryPlanner(rocketLeftPlan, 80, 80, 80, "RocketLeft");
+    rocketLeftTraj.generate();
 
     driverStick1 = new Joystick(DRIVER_STICK1);
     driverStick2 = new Joystick(DRIVER_STICK2);
@@ -302,6 +309,7 @@ public class Robot extends TimedRobot {
     xButton1 = new Button(driverStick1, 3, "X");
     yButton1 = new Button(driverStick1, 4, "Y");
     trigger1 = new Button(driverStick1, 1, "SDS Out");
+    rocketLeftButton = new Button(driverStick1, 16, "DATA EXPUNGED");
     //thumb1 = new Button(driverStick1, 2, "SDS Out");
 
     aButton2 = new Button(driverStick2, 5, "A");
@@ -521,8 +529,9 @@ public class Robot extends TimedRobot {
     hatchLogic();
     winchLogic();
     intakeLogic();
+    autoDriveLogic();
     magicLogic();
-    if(!trajStarted){
+    if(!trajStarted && !rocketLeftActive){
       drivingLogic();
     }
 
@@ -547,6 +556,7 @@ public class Robot extends TimedRobot {
     //thumb1.update();
     aButton2.update();
     bButton2.update();
+    rocketLeftButton.update();
     xButton2.update();
     yButton2.update();
     trigger2.update();
@@ -607,6 +617,26 @@ public class Robot extends TimedRobot {
         winchController.configureGoal(WINCH_UP_SETPOINT, 100, 100, true);
       }
     }*/
+  }
+
+  public void autoDriveLogic() {
+    if(rocketLeftButton.held()) {
+      if(rocketLeftButton.changed()) {
+        driveRightEnc.reset();
+        driveLeftEnc.reset();
+        leftController.configureTrajectory(rocketLeftTraj.getLeftTrajectory(), false);
+        rightController.configureTrajectory(rocketLeftTraj.getRightTrajectory(), false);
+        leftController.enable();
+        rightController.enable();
+        rocketLeftActive = true;
+      }
+    } else {
+      if(rocketLeftActive){
+        rightController.disable();
+        leftController.disable();
+        rocketLeftActive = false;
+      }
+    }
   }
 
   public void eightMagicLogic(){
