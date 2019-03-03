@@ -561,7 +561,8 @@ public class Robot extends TimedRobot {
     if(trigger2.on()||sdsOperator.getState() == -1.0){
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
-      roller.set(ControlMode.PercentOutput, -0.50);
+      //roller.set(ControlMode.PercentOutput, -0.50); //ATLAS
+      roller.set(ControlMode.PercentOutput, -0.45); //Helps Intake on Calypso, try on Atlas
       trigger1.toggleOff();
       System.out.println("in");
       lb.light(trigger2);
