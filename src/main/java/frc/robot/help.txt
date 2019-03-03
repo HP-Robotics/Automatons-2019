@@ -8,3 +8,4 @@ Motion trajectory for moving to rocket in sandstorm
 Turny limelight thing
 Move to take us off ledge -- on Button
 Let drivers move elevator between upper levels even if winch is not down [Done]
+USB Camera server
