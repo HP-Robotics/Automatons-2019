@@ -213,6 +213,7 @@ public class Robot extends TimedRobot {
   public Button calibrateButton;
   public Button winchToggleButton;
   public Button elevatorHopButton;
+  public Button stepAutoButton;
 
 
   public Button resetButton;
@@ -255,6 +256,7 @@ public class Robot extends TimedRobot {
   double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
   double[][] shiftLeft = {{0, 0, 0},{36, 6, 0}};
   double[][] rocketLeftPlan = {{0, 0, 0},{127.5, 95.7, 28.875}};
+  double[][] stepAutoPlan = {{0,0,0},{50,0,0}};
 
   public boolean rocketLeftActive = false;
 
@@ -267,6 +269,10 @@ public class Robot extends TimedRobot {
   TrajectoryPlanner racetrackTurnTraj;
   TrajectoryPlanner shiftLeftTraj;
   TrajectoryPlanner rocketLeftTraj;
+  TrajectoryPlanner stepTraj;
+
+  StepAuto steppy;
+  public boolean steppyActive = false;
 
   // PRO FRANK ONLY
 	//DoubleSolenoid driveSolenoid;
@@ -301,6 +307,11 @@ public class Robot extends TimedRobot {
     rocketLeftTraj = new TrajectoryPlanner(rocketLeftPlan, 80, 80, 80, "RocketLeft");
     rocketLeftTraj.generate();
 
+    stepTraj = new TrajectoryPlanner(stepAutoPlan, 60, 60, 60, "StepAuto");
+    stepTraj.generate();
+
+    steppy = new StepAuto(this);
+
     driverStick1 = new Joystick(DRIVER_STICK1);
     driverStick2 = new Joystick(DRIVER_STICK2);
     operatorBox = new Joystick(OPERATOR_BOX);
@@ -332,6 +343,7 @@ public class Robot extends TimedRobot {
     yButton2 = new Button(driverStick2, 4, "Y");
     trigger2 = new Button(driverStick2, 1, "SDS In");
     thumb2 = new Button(driverStick2, 2, "SDS Out");
+    stepAutoButton = new Button(driverStick2, 10, "Step");
 
     calibrateButton = new Button(driverStick1, 14, "Lib Owned");
     elevatorHopButton = new Button(driverStick2, 14, "Hop");
@@ -556,7 +568,7 @@ public class Robot extends TimedRobot {
     intakeLogic();
     autoDriveLogic();
     magicLogic();
-    if(!trajStarted && !rocketLeftActive){
+    if(!trajStarted && !rocketLeftActive && !steppyActive){
       drivingLogic();
     }
 
@@ -594,6 +606,7 @@ public class Robot extends TimedRobot {
     yButton2.update();
     trigger2.update();
     thumb2.update();
+    stepAutoButton.update();
     //hatchInButton1.update();
     //hatchOutButton1.update();
     hatchInButton2.update();
@@ -669,6 +682,26 @@ public class Robot extends TimedRobot {
         leftController.disable();
         rocketLeftActive = false;
       }
+    }
+
+    if(stepAutoButton.held()){
+      if(stepAutoButton.changed()){
+        steppy.init();
+        steppyActive = true;
+      }else{
+        steppy.periodic();
+      }
+    }else{
+      if(stepAutoButton.changed()){
+        steppy.stopAll();
+        steppy.nextStage();
+      }
+      if(steppyActive){
+        rightController.disable();
+        leftController.disable();
+        steppyActive = false;
+      }
+      
     }
   }
 
