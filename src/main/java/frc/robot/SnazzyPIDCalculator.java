@@ -72,6 +72,8 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
   private SnazzyLog m_log = new SnazzyLog();
   protected String m_file = null;
 
+  private double lastCalcTime = 0.0;
+
   /**
    * Tolerance is the type of tolerance used to specify if the PID controller is on target.
    *
@@ -241,6 +243,16 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
     double dterm = 0;
     double fterm = 0;
     double tfterm = 0;
+
+    /* Gremlin hunting code */
+    double now;
+    now = Timer.getFPGATimestamp();
+    if (lastCalcTime != 0.0) {
+      if(now-lastCalcTime>m_period*3) {
+        System.out.println("Gremlin " + m_file + " " + (now-lastCalcTime) + "s, now " + now + "s, lastCalcTime " + lastCalcTime + "s");
+      }
+    }
+    lastCalcTime=now;
     
     synchronized (this) {
       if (m_pidInput == null) {
@@ -681,12 +693,13 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
 		m_totalError = 0;
 		m_result = 0;
 	}
-    m_enabled = true;
     m_log.open(m_file, "Timestamp, Input, Error, Accumulated Error, Calculated Output, P: " + m_P + ", I: " + m_I +  ", D: " + m_D + ", F: " + m_F +", TF, Heading, Gyro"+", Setpoint\n");
     m_log.reset();
     if (m_table != null) {
       m_table.putBoolean("enabled", true);
     }
+    m_enabled = true;
+    lastCalcTime = 0.0;
   }
 
   /**

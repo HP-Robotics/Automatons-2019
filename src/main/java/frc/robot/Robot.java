@@ -515,12 +515,25 @@ public class Robot extends TimedRobot {
     // PRO FRANK ONLY
     //driveSolenoid = new DoubleSolenoid(2, 3);
 		//compressor = new Compressor(0);
-
-    System.out.println(Timer.getFPGATimestamp() + " enable time, thread id " + Thread.currentThread().getId());
-
     
 
-    
+    /* GREMLIN Mitigation 
+        It seems to appease the Gremlin, if we let the pid loop run for a while.  We can do that
+        while the robot is running, because motor outputs are disabled.  Not ideal, but... */
+    winchController.configureGoal(0, winch_max_a, winch_max_v, true);
+    winchController.enable();
+
+    hatchController.configureGoal(0, 500, 500, true);
+    hatchController.enable();
+
+    leftController.configureGoal(0, 10, 10, false);
+    leftController.enable();
+    rightController.configureGoal(0, 10, 10, false);
+    rightController.enable();
+
+    //elevatorController.configureGoal(0, elevator_max_a, elevator_max_v, false); // ATLAS
+    //elevatorController.enable(); // ATLAS
+
   }
   /**
    * This function is called every robot packet, no matter the mode. Use
@@ -552,7 +565,7 @@ public class Robot extends TimedRobot {
     //TODO - Smartdashboard?  Button?
     teleopInit();
     if (SmartDashboard.getBoolean("Elevator Hop", true)) {
-      elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
+      // elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);  //ATLAS
     }
   }
 
@@ -565,6 +578,11 @@ public class Robot extends TimedRobot {
   }
   @Override
   public void teleopInit() {
+
+    /* Gremlin mitigation - we don't want the drive train running while we roll... */
+    leftController.reset();
+    rightController.reset();
+
     //elevatorController.configureGoal(0, elevator_max_v, elevator_max_a, true);
     //hatch.set(ControlMode.PercentOutput, 0.0);
     //winch.set(ControlMode.PercentOutput, 0.0);
@@ -574,10 +592,8 @@ public class Robot extends TimedRobot {
     winchController.configureGoal(0, winch_max_v, winch_max_a, true);
     winchController.enable();
     
-    hatchController.setSetpoint(hatchPot.get());
+    hatchController.setSetpoint(hatchPot.get());  /* Gremlin mitigation.  If the gremlin prevents this from working, at least hold current position */
     hatchController.configureGoal(HATCH_UP-hatchPot.get(), 500, 500, true);
-    //System.out.println(Timer.getFPGATimestamp() + " enable time, thread id " + Thread.currentThread().getId());
-
     hatchController.enable();
 
     // PRO FRANK
