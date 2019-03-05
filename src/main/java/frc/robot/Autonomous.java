@@ -32,6 +32,10 @@ public class Autonomous {
 	}
 
 	public void start() {
+
+		for(int i = 0; i < stageData.length; i++) {
+			stageData[i].entered = false;
+		}
 		robot.driveLeftEnc.reset();
 		robot.driveRightEnc.reset();
 
