@@ -92,14 +92,13 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	}
 	public void configureGoal(double goal, double max_v, double max_a, boolean dwell) {
 		m_motionPlanEnabled = true;
+		m_motionTrajectoryEnabled = false;
+
 		m_planFinished = false;
 		m_dwell = dwell;
 		m_initTime = Timer.getFPGATimestamp();
 		m_initPos = m_pidInput.pidGet();
 
-		System.out.println("goal " + goal);
-		System.out.println("max a" + max_a);
-		System.out.println(" max v " + max_v);
 
 		//check if goal is negative
 		if(goal < 0) {
@@ -143,9 +142,6 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 		m_positionAtEndOfCruise = m_positionAtMaxVelocity + (m_timeSpentCruising * m_maxVelocity);
 		m_timeAtEndOfCruise = m_timeUntilMaxVelocity + m_timeSpentCruising;
 
-		System.out.println(" time spent cruising" + m_timeSpentCruising);
-		System.out.println(" max velocity" + m_maxVelocity);
-		System.out.println("time until midpoint" + t_until_midpoint);
 
 	}
 
@@ -199,6 +195,7 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	
 	public void configureTrajectory(Trajectory t, boolean dwell) {
 		m_motionTrajectoryEnabled = true;
+		m_motionPlanEnabled = false;
 		m_planFinished = false;
 		m_dwell = dwell;
 		m_initTime = Timer.getFPGATimestamp();
