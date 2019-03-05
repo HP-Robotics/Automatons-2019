@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -31,6 +32,8 @@ import edu.wpi.first.wpilibj.interfaces.Potentiometer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import jaci.pathfinder.Pathfinder;
 import jaci.pathfinder.Trajectory;
+import edu.wpi.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.CameraServer;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -64,10 +67,11 @@ public class Robot extends TimedRobot {
   public static final int DRIVER_STICK2 = 1;
   public static final int OPERATOR_BOX = 2;
 
-  public static final double HATCH_UP = 90.0;
-  public static final double HATCH_DOWN = 155.0;
+  public static final double HATCH_UP = 95.0;//ATLAS 90.0
+  public static final double HATCH_DOWN = 145.0;//ATLAS 155.0
   public static final double HATCH_SAFE_BOTTOM = 250.0;
   public static final double HATCH_SAFE_TOP = 30.0;
+  public static final double HATCH_EMERGENCY_DOWN = 235.0;
 
   public static final int ENC_ERROR = 5;
   public static final int HATCH_LEVEL1 = 100;
@@ -277,6 +281,16 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
+    /*CameraServer camera = CameraServer.getInstance();
+		if(camera != null) {
+			System.out.println("A camera was found");
+			UsbCamera c = camera.startAutomaticCapture("USB", "/dev/v41/by-path/platform-3f980000.usb-usb-0:1.2:1.0-video-index0");
+			if(c != null) {
+				System.out.println("And it started.");
+				c.setResolution(320, 180);
+				c.setFPS(15);   Owen and Noelle found that A frame rate of 15 seems to work better than 29 
+			}
+    }*/
     
 		/*racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
     racetrackStartTraj.generate();
@@ -453,6 +467,9 @@ public class Robot extends TimedRobot {
     //driveSolenoid = new DoubleSolenoid(2, 3);
 		//compressor = new Compressor(0);
 
+    System.out.println(Timer.getFPGATimestamp() + " enable time, thread id " + Thread.currentThread().getId());
+
+    
 
     
   }
@@ -484,7 +501,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     //ATLAS
     //TODO - Smartdashboard?  Button?
-
+    teleopInit();
     if (SmartDashboard.getBoolean("Elevator Hop", true)) {
       elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a);
     }
@@ -505,6 +522,14 @@ public class Robot extends TimedRobot {
     //elevator.set(ControlMode.PercentOutput, 0.0);
     //leftSDS.set(ControlMode.PercentOutput, 0.0);
     //rightSDS.set(ControlMode.PercentOutput, 0.0);
+    winchController.configureGoal(0, winch_max_v, winch_max_a, true);
+    winchController.enable();
+    
+    hatchController.setSetpoint(hatchPot.get());
+    hatchController.configureGoal(HATCH_UP-hatchPot.get(), 500, 500, true);
+    //System.out.println(Timer.getFPGATimestamp() + " enable time, thread id " + Thread.currentThread().getId());
+
+    hatchController.enable();
 
     // PRO FRANK
     //driveSolenoid.set(lowGear);
@@ -539,6 +564,14 @@ public class Robot extends TimedRobot {
     
   }
 
+  @Override
+  public void disabledInit(){
+    hatchController.disable();
+    winchController.disable();
+    //elevatorController.disable(); //ATLAS
+    leftController.disable();
+    rightController.disable();
+  }
 
   /**
    * This function is called periodically during test mode.
@@ -767,6 +800,10 @@ public class Robot extends TimedRobot {
 }
 
   public void hatchLogic(){
+    if(/*!winchDown.get()&&*/yButton1.held()&&xButton2.held()){
+      hatchController.configureGoal(HATCH_EMERGENCY_DOWN-hatchPot.get(), 500, 500, false);
+    }
+
     if (hatchPot.get() >= HATCH_SAFE_TOP && hatchPot.get() <= HATCH_SAFE_BOTTOM) {
       if(!hatchController.isEnabled()){
         hatchController.enable();

@@ -9,3 +9,7 @@ Turny limelight thing
 Move to take us off ledge -- on Button
 Let drivers move elevator between upper levels even if winch is not down [Done]
 USB Camera server
+Tune limelight at duluth
+winch beginning setpoint, power motor 
+In place 180 button
+Failsafe hatch, latch goes all the way down to get hatch off
