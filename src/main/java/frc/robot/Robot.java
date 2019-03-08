@@ -79,11 +79,12 @@ public class Robot extends TimedRobot {
   public static final double HATCH_LEVEL1 = 100;
   public static final double HATCH_LEVEL2 = 4335 -225;
   public static final double HATCH_LEVEL3 = 7810 -225;
+  public static final double SAFE_UP = 1900.0;
   public static final double CARGO_LEVEL1 = 2870;
   public static final double CARGO_LEVEL2 = 6432;
   public static final double CARGO_LEVEL3 = 9570;
   public static final double CARGO_CARGO = 4400; 
-  public static final double HOP_ELEVATOR = 700;
+  public static final double HOP_ELEVATOR = 750;
   public static final double ELEVATOR_ERROR = 100;
 
   //ANTI-FRANK
@@ -122,6 +123,9 @@ public class Robot extends TimedRobot {
   public static final double elevatorkV = 0;//0.00183371;
   public final static double elevator_max_a = 8000;
   public final static double elevator_max_v = 5555;
+
+  public boolean hopping = false;
+   public double hoptime;
 
   public static final double spinP = 0.05;
   public static final double spinI = 0.00001;
@@ -568,7 +572,9 @@ public class Robot extends TimedRobot {
     //TODO - Smartdashboard?  Button?
     teleopInit();
     if (SmartDashboard.getBoolean("Elevator Hop", true)) {
-      elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a, false);  //ATLAS
+      elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a, true);  //ATLAS
+      hopping = true;
+      hoptime = Timer.getFPGATimestamp();
     }
   }
 
@@ -609,6 +615,11 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    
+    if(hopping && (Timer.getFPGATimestamp()-hoptime)>3.0){
+      elevatorController.configureGoal(0-elevatorEnc.get(), elevator_max_v, elevator_max_a, false);
+      hopping = false;
+    }
     dashboardPuts();
     updateButtons();
     if(calibrating) {
@@ -673,6 +684,8 @@ public class Robot extends TimedRobot {
     elevatorButtons.update();
     sdsOperator.update();
     magicButton.update();
+    elevatorHopButton.update();
+    resetButton.update();
 
   }
   public void intakeLogic(){
@@ -895,7 +908,7 @@ public class Robot extends TimedRobot {
     }
     //TODO - Allow elevator to move among high levels even if the winch is not down
     // TODO - allow a little below level1 too
-    if(winchDown.get()|| elevatorEnc.get()>(CARGO_LEVEL1-ELEVATOR_ERROR)){ //COMMENT IN FOR ATLAS
+    if(winchDown.get()|| elevatorEnc.get()>(SAFE_UP-ELEVATOR_ERROR)){ //COMMENT IN FOR ATLAS
       if((hatch1.changed()&&hatch1.on())|| (shipHatch.changed()&&shipHatch.on())|| (hatchFeeder.changed()&&hatchFeeder.on()) )
       {
         if(winchDown.get()){
