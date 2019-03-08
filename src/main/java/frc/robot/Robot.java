@@ -75,16 +75,16 @@ public class Robot extends TimedRobot {
   public static final double HATCH_SAFE_TOP = 30.0;
   public static final double HATCH_EMERGENCY_DOWN = 235.0;
 
-  public static final int ENC_ERROR = 5;
-  public static final int HATCH_LEVEL1 = 100;
-  public static final int HATCH_LEVEL2 = 4335;
-  public static final int HATCH_LEVEL3 = 7810;
-  public static final int CARGO_LEVEL1 = 2870;
-  public static final int CARGO_LEVEL2 = 6432;
-  public static final int CARGO_LEVEL3 = 9570;
-  public static final int CARGO_CARGO = 4400; // GUESS
-  public static final int HOP_ELEVATOR = 700;
-  public static final int ELEVATOR_ERROR = 100;
+  public static final double ENC_ERROR = 5;
+  public static final double HATCH_LEVEL1 = 100;
+  public static final double HATCH_LEVEL2 = 4335 -225;
+  public static final double HATCH_LEVEL3 = 7810 -225;
+  public static final double CARGO_LEVEL1 = 2870;
+  public static final double CARGO_LEVEL2 = 6432;
+  public static final double CARGO_LEVEL3 = 9570;
+  public static final double CARGO_CARGO = 4400; 
+  public static final double HOP_ELEVATOR = 700;
+  public static final double ELEVATOR_ERROR = 100;
 
   //ANTI-FRANK
   final static double DRIVE_ENC_TO_INCH = Math.PI * 6.0 * (1.0/2048.0);
