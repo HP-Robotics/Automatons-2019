@@ -8,7 +8,9 @@ import edu.wpi.first.wpilibj.PIDSourceType;
 
 public class LimelightAnglePIDSource implements PIDSource {
     
-    private NetworkTableEntry txEntry = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx");
+	
+	private NetworkTableEntry txEntry = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tx");
+	/*private NetworkTableEntry tzEntry = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tz");*/
     private NetworkTableEntry tvEntry = NetworkTableInstance.getDefault().getTable("limelight").getEntry("tv");
 
 	@Override
@@ -29,6 +31,7 @@ public class LimelightAnglePIDSource implements PIDSource {
     }
     
     public boolean isValid() {
-        return tvEntry.getDouble(0.0) == 1.0;
+		/*System.out.println("tx: " + txEntry.getDouble(0.0) + " tv: " + tvEntry.getDouble(0.0) + " tz: " + tzEntry.getDouble(0.0));*/
+		return tvEntry.getDouble(0.0) == 1.0; /*&& Math.abs(txEntry.getDouble(0.0))< 40.0 && tzEntry.getDouble(0.0) < 120.0;*/
     }
 }

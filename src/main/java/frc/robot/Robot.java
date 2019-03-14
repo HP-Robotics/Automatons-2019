@@ -686,6 +686,7 @@ public class Robot extends TimedRobot {
     magicButton.update();
     elevatorHopButton.update();
     resetButton.update();
+    hatchFeeder.update();
 
   }
   public void intakeLogic(){
