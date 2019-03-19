@@ -1,4 +1,4 @@
-/*
+
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -76,4 +76,3 @@ public class RightRocketFarAuto extends Autonomous {
 	
 }
 
-*/

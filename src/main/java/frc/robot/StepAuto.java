@@ -1,4 +1,4 @@
-/*
+
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -16,12 +16,25 @@ public class StepAuto extends Autonomous {
 	public void init() {
 		
 		Blueprint[] blueprints = new Blueprint[] {
+				new Blueprint(1.0, this::holdStart, this::holdPeriodic),
 				new Blueprint(5.0, this::goStart, this::goPeriodic), 
                 new Blueprint(1.0, this::backStart, this::backPeriodic),
 				};
 		setBlueprints(blueprints);
 		
 		start();
+	}
+
+	public int holdStart(){
+		robot.hatchController.configureGoal(60-robot.hatchPot.get(), 500, 500, true);
+		robot.hatchController.enable();
+
+		return 0;
+	}
+
+	public int holdPeriodic(){
+		nextStage();
+		return 0;
 	}
 	
 	public int goStart() {
@@ -67,4 +80,3 @@ public class StepAuto extends Autonomous {
 	
 }
 
-*/

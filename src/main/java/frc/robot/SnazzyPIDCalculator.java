@@ -249,7 +249,8 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
     now = Timer.getFPGATimestamp();
     if (lastCalcTime != 0.0) {
       if(now-lastCalcTime>m_period*3) {
-        System.out.println("Gremlin " + m_file + " " + (now-lastCalcTime) + "s, now " + now + "s, lastCalcTime " + lastCalcTime + "s");
+        //System.out.println("Gremlin " + m_file + " " + (now-lastCalcTime) + "s, now " + now + "s, lastCalcTime " + lastCalcTime + "s");
+        System.out.printf("Gremlin %s %gs, now %gs, lastCalcTime %gs\n", m_file, (now-lastCalcTime), now, lastCalcTime);
       }
     }
     lastCalcTime=now;
@@ -334,8 +335,10 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
 
       
 
-	  m_log.write(timestamp + ", " + input + ", " + m_error + ", " + m_totalError + 
-				  ", " + m_result + ", " + pterm + ", " + iterm + ", " + dterm + ", " + fterm + ", " +tfterm+", "+ getHeading()+", "+getGyro()+", "+ m_setpoint + "\n");
+	  /*m_log.write(timestamp + ", " + input + ", " + m_error + ", " + m_totalError + 
+          ", " + m_result + ", " + pterm + ", " + iterm + ", " + dterm + ", " + fterm + ", " +tfterm+", "+ getHeading()+", "+getGyro()+", "+ m_setpoint + "\n");*/
+          m_log.write(String.format("%g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g, %g\n", timestamp, input, m_error, 
+            m_totalError, m_result, pterm, iterm, dterm, fterm, tfterm, getHeading(), getGyro(), m_setpoint));
     }
   }
 
@@ -693,7 +696,8 @@ public class SnazzyPIDCalculator implements PIDInterface, LiveWindowSendable {
 		m_totalError = 0;
 		m_result = 0;
 	}
-    m_log.open(m_file, "Timestamp, Input, Error, Accumulated Error, Calculated Output, P: " + m_P + ", I: " + m_I +  ", D: " + m_D + ", F: " + m_F +", TF, Heading, Gyro"+", Setpoint\n");
+    //m_log.open(m_file, "Timestamp, Input, Error, Accumulated Error, Calculated Output, P: " + m_P + ", I: " + m_I +  ", D: " + m_D + ", F: " + m_F +", TF, Heading, Gyro"+", Setpoint\n");
+    m_log.open(m_file, String.format("Timestamp, Input, Error, Accumulated Error, Calculated Output, P: %g, I: %g, D: %g, F: %g, TF, Heading, Gyro, Setpoint\n", m_P, m_I, m_D, m_F));
     m_log.reset();
     if (m_table != null) {
       m_table.putBoolean("enabled", true);

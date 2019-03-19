@@ -11,6 +11,7 @@ import jaci.pathfinder.Trajectory;
 public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	private java.util.Timer m_controlLoop;
 	private boolean m_calibrating;
+	private boolean m_calibrationStart;
 	private SnazzyLog m_calLog;
 	private double m_calStart;
 	private double m_lastCal;
@@ -65,7 +66,8 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 			double period, String fname, Robot robot) {
 		super(Kp, Ki, Kd, Kf, source, output, period, fname);
 		m_controlLoop = new java.util.Timer();
-		m_controlLoop.schedule(new PIDTask(),0L, (long) (period * 1000));
+		// m_controlLoop.schedule(new PIDTask(),0L, (long) (period * 1000));
+		m_controlLoop.scheduleAtFixedRate(new PIDTask(), 0L, (long) (1000* period));
 		m_calLog = new SnazzyLog();
 		m_kA = kA;
 		m_kV = kV;
@@ -207,34 +209,45 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	public void runCalibration() {
 		double currentDist;
 		double currentCal;
-		m_calLog.open("Calibration" + m_file, "Timestamp, Distance, Velocity" + "\n");
+		double currentV;
 		synchronized(this) {
 			m_pidOutput.pidWrite(1.0);
 			currentCal = Timer.getFPGATimestamp();
 			currentDist = m_pidInput.pidGet();
 		}
-		
-		double currentV = (currentDist-m_lastDist)/(currentCal-m_lastCal);
-		m_calLog.write(currentCal-m_calStart + ", " + currentDist + ", " + currentV + "\n");
-		if(currentV <= (m_lastV*1.01)) {
-			m_count +=1;
-			if(m_count >= 30)
-				{
-				stopCalibration();
-			}
-		}else {
-			m_count = 0;
+
+		if (m_calibrationStart) {
+			m_calLog.open(String.format("Calibration%s", m_file), "Timestamp, Distance, Velocity\n");
+			m_calLog.write("0.0,0.0,0.0\n");
+			m_calStart = currentCal;
+			currentV = 0.0;
+			m_calibrationStart = false;
 		}
+		else {
+
+			currentV = (currentDist - m_lastDist) / (currentCal - m_lastCal);
+			//m_calLog.write(currentCal - m_calStart + ", " + currentDist + ", " + currentV + "\n");
+			m_calLog.write(String.format("%g,%g,%g\n", currentCal - m_calStart, currentDist, currentV));
+
+			if (currentV <= (m_lastV * 1.01)) {
+				m_count += 1;
+				if (m_count >= 10) {
+					stopCalibration();
+				}
+			} else {
+				m_count = 0;
+			}
+		}
+
 		m_lastDist = currentDist;
 		m_lastCal = currentCal;
 		m_lastV = currentV;
 	}
 	public void startCalibration() {
 		m_calibrating = true;
-		m_lastCal = m_calStart = Timer.getFPGATimestamp();
-		m_lastDist = m_pidInput.pidGet();
-
+		m_calibrationStart = true;
 	}
+	
 	public void stopCalibration() {
 		m_calLog.close();
 		synchronized(this) {
@@ -335,8 +348,7 @@ public class SnazzyMotionPlanner extends SnazzyPIDCalculator {
 	
 	protected double calculateFeedForward() {
 		if((m_motionPlanEnabled || m_motionTrajectoryEnabled) && m_currentWaypoint != null) {
-    		return ((m_currentWaypoint.m_expectedAcceleration * m_kA) + (m_currentWaypoint.m_expectedVelocity * m_kV)
-    				+ (m_currentWaypoint.m_expectedtA * m_kAT) + (m_currentWaypoint.m_expectedtV * m_kVT))*m_invertMultiplier;
+    		return ((m_currentWaypoint.m_expectedAcceleration * m_kA) + (m_currentWaypoint.m_expectedVelocity * m_kV)) * m_invertMultiplier;
     	}
     	
     	return 0.0;

@@ -28,9 +28,9 @@ public class SnazzyLog {
 		m_file = file;
 		try {
 			if(Files.exists(Paths.get("/home/lvuser"))) {
-				m_f = new File("home/lvuser/" + file);
+				m_f = new File(String.format("/home/lvuser/%s", file));
 			} else {
-				m_f = new File("/tmp/" + file);
+				m_f = new File(String.format("/tmp/%s",file));
 			}
 			if(!m_f.exists()) {
 				m_f.createNewFile();

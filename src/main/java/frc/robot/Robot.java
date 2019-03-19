@@ -55,12 +55,15 @@ public class Robot extends TimedRobot {
   public SnazzyMotionPlanner leftController;
   public SnazzyMotionPlanner rightController;
   public SnazzyPIDCalculator spinCalculator;
+  public SnazzyMotionPlanner spinnyController;
   public DrivePIDOutput rightPIDOutput;
   public DrivePIDOutput leftPIDOutput;
   public DrivePIDSourceInches leftInInches;
   public DrivePIDSourceInches rightInInches;
   public TurnPIDOutput spinOutput;
+  public SpinnyPIDOutput spinnyOutput;
   public LimelightAnglePIDSource spinInput;
+  public SpinnyPIDSource spinnyInput;
 
   private double addToLeft = 0.0;
   private double addToRight = 0.0;
@@ -70,7 +73,7 @@ public class Robot extends TimedRobot {
   public static final int OPERATOR_BOX = 2;
 
   public static final double HATCH_UP = 95.0;//ATLAS 90.0
-  public static final double HATCH_DOWN = 145.0;//ATLAS 155.0
+  public static final double HATCH_DOWN = 150.0;//ATLAS 155.0
   public static final double HATCH_SAFE_BOTTOM = 250.0;
   public static final double HATCH_SAFE_TOP = 30.0;
   public static final double HATCH_EMERGENCY_DOWN = 235.0;
@@ -140,24 +143,17 @@ public class Robot extends TimedRobot {
   final double drivetkA = 0.044;
   final double drivetkV = 0.178;*/
   
-  //ATLAS
+
+
+
+  //CALYPSO + ATLAS
   public final static double driveP = 0.5;
-  public final static double driveI = 0.05;
-  public final static double driveD = 1.5;
+  public final static double driveI = 0.1;
+  public final static double driveD = 0.4;
   public static final double drivekV = 0.0108;
   public static final double drivekA = 0.002829;
-  final double drivetkA = 0.0;
-  final double drivetkV = 0.0;
-
-
-  //CALYPSO
-  /*public final static double driveP = 0.5;
-  public final static double driveI = 0.05;
-  public final static double driveD = 0.5;
-  public static final double drivekV = 0.0108;
-  public static final double drivekA = 0.002829;
-  final double drivetkA = 0.0;
-  final double drivetkV = 0.0;*/
+  final double drivetkA = 0.000352641;
+  final double drivetkV = 0.00143277;
   
   // 38.1 is about 180 degrees, 18.4 is about 90
   public boolean hatchDown = false;
@@ -165,16 +161,16 @@ public class Robot extends TimedRobot {
   public boolean pidTuning = false;
 
   //ATLAS
-  public TalonSRX topRight;
+  /*public TalonSRX topRight;
   public TalonSRX topLeft;
   public TalonSRX bottomRight;
-  public TalonSRX bottomLeft;
+  public TalonSRX bottomLeft;*/
 
   //CALYPSO
-  /*public VictorSPX topRight;
+  public VictorSPX topRight;
   public VictorSPX topLeft;
   public VictorSPX bottomRight;
-  public VictorSPX bottomLeft;*/
+  public VictorSPX bottomLeft;
 
 
   public Encoder driveLeftEnc;
@@ -189,11 +185,11 @@ public class Robot extends TimedRobot {
   public Joystick driverStick2;
   public Joystick operatorBox;
 
-  public TalonSRX roller; //ATLAS
-  //public VictorSPX roller; //CALYPSO
+  //public TalonSRX roller; //ATLAS
+  public VictorSPX roller; //CALYPSO
   public TalonSRX leftSDS;
-  public TalonSRX rightSDS; //ATLAS
-  //public VictorSPX rightSDS; //CALYPSO
+  //public TalonSRX rightSDS; //ATLAS
+  public VictorSPX rightSDS; //CALYPSO
 
   public TalonSRX hatch;
   public TalonSRX elevator; //ATLAS
@@ -264,31 +260,34 @@ public class Robot extends TimedRobot {
   public Button[] elevatorButtonArray;
 
   // TODO - Add trajectories for sandstorm moves
-  /*double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
+  double[][] racetrackStartPlan = {{0, 0, 0}, {60, 0, 0}};
   double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
   double[][] shiftLeft = {{0, 0, 0},{36, 6, 0}};
-  double[][] rocketLeftPlan = {{0, 0, 0},{127.5, 95.7, 28.875}};
-  double[][] rocketRightPlan = {{0, 0, 0},{127.5, -95.7, -28.875}};
+  double[][] leftRocketClosePlan = {{0, 0, 0},{127.5-42.0, 95.7-23.0, 28.875}};
+  double[][] rightRocketClosePlan = {{0, 0, 0},{127.5-42.0, -(95.7-23.0), -28.875}};
   double[][] stepAutoPlan = {{0,0,0},{50,0,0}};
   double[][] leftRocketFarAutoPlan = {{0,0,0},{200,50,0}};
-  double[][] rightRocketFarAutoPlan = {{0,0,0},{200,-50,0}};*/
+  double[][] rightRocketFarAutoPlan = {{0,0,0},{200,-50,0}};
+  double[][] leftCloseRocketBackPlan = {{0,0,0},{48, -48, 28.875}}; //TODO //TODO 
+  double[][] leftCloseRocketfeederPlan = {{0,0,0},{48, -48, -28.875}}; //TODO //TODO 
 
-  //public boolean rocketLeftActive = false;
 
-  //public boolean rocketRightActive = false;
+  public boolean rocketLeftCloseActive = false;
+
+  public boolean rocketRightCloseActive = false;
 
   public double[] winchArray = {0, /*923,*/ 2592};
   public int winchPos = 0;
   public int winchCount = 0;
   public boolean winchDefault = true;
   
-  /*TrajectoryPlanner racetrackStartTraj;
+  TrajectoryPlanner racetrackStartTraj;
   TrajectoryPlanner racetrackTurnTraj;
   TrajectoryPlanner shiftLeftTraj;
-  TrajectoryPlanner rocketLeftTraj;
+  TrajectoryPlanner leftRocketCloseTraj;
   TrajectoryPlanner rocketLeftFarTraj;
   TrajectoryPlanner rocketRightFarTraj;
-  TrajectoryPlanner rocketRightTraj;
+  TrajectoryPlanner rightRocketCloseTraj;
 
   TrajectoryPlanner stepTraj;
 
@@ -299,9 +298,11 @@ public class Robot extends TimedRobot {
   public boolean leftFarActive = false;
 
   RightRocketFarAuto rightFarAuto;
-  public boolean rightFarActive = false;*/
+  public boolean rightFarActive = false;
 
+  LeftRocketCloseAuto leftCloseAuto;
 
+  RightRocketCloseAuto rightCloseAuto;
   // PRO FRANK ONLY
 	//DoubleSolenoid driveSolenoid;
   //Compressor compressor;
@@ -321,20 +322,20 @@ public class Robot extends TimedRobot {
 			UsbCamera c = camera.startAutomaticCapture();
 			if(c != null) {
         System.out.println("And it started.");
-        c.setVideoMode(PixelFormat.kYUYV,640, 320, 15);
-				//c.setResolution(320, 180);
+        c.setVideoMode(PixelFormat.kMJPEG,320, 240, 10);
+			  //c.setResolution(320, 160);
 				//c.setFPS(15);  
 			}
     }
     
-		/*racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
+		racetrackStartTraj = new TrajectoryPlanner(racetrackStartPlan,  50, 50, 50, "RacetrackStart");
     racetrackStartTraj.generate();
     racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
     racetrackTurnTraj.generate();
     shiftLeftTraj = new TrajectoryPlanner(shiftLeft, 100, 100, 100, "shiftLeft");
-    shiftLeftTraj.generate();*/
-    /*rocketLeftTraj = new TrajectoryPlanner(rocketLeftPlan, 80, 80, 80, "RocketLeft");
-    rocketLeftTraj.generate();
+    shiftLeftTraj.generate();
+    leftRocketCloseTraj = new TrajectoryPlanner(leftRocketClosePlan, 100, 100, 300, "RocketLeft");
+    leftRocketCloseTraj.generate();
 
     rocketLeftFarTraj = new TrajectoryPlanner(leftRocketFarAutoPlan, 69, 69, 69, "RocketLeftFar");
     rocketLeftFarTraj.generate();
@@ -342,17 +343,22 @@ public class Robot extends TimedRobot {
     rocketRightFarTraj = new TrajectoryPlanner(rightRocketFarAutoPlan, 69, 69, 69, "RocketRightFar");
     rocketRightFarTraj.generate();
 
-    rocketRightTraj = new TrajectoryPlanner(rocketRightPlan, 80, 80, 80, "RocketRight");
-    rocketRightTraj.generate();
 
-    stepTraj = new TrajectoryPlanner(stepAutoPlan, 60, 60, 60, "StepAuto");
+    rightRocketCloseTraj = new TrajectoryPlanner(rightRocketClosePlan, 100, 100, 300, "RocketRight");
+    rightRocketCloseTraj.generate();
+
+
+    stepTraj = new TrajectoryPlanner(stepAutoPlan, 100, 300, 3000, "StepAuto");
     stepTraj.generate();
 
     steppy = new StepAuto(this);
 
     leftFarAuto = new LeftRocketFarAuto(this);
 
-    rightFarAuto = new RightRocketFarAuto(this);*/
+    rightFarAuto = new RightRocketFarAuto(this);
+
+    leftCloseAuto = new LeftRocketCloseAuto(this);
+    rightCloseAuto = new RightRocketCloseAuto(this);
 
     driverStick1 = new Joystick(DRIVER_STICK1);
     driverStick2 = new Joystick(DRIVER_STICK2);
@@ -421,16 +427,17 @@ public class Robot extends TimedRobot {
 
     //ATLAS
     winchDown = new DigitalInput(9);
+    /*
     topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
-    bottomRight = new TalonSRX(13);
+    bottomRight = new TalonSRX(13);*/
 
     //CALYPSO
-    /*topLeft = new VictorSPX(10);
+    topLeft = new VictorSPX(10);
     bottomLeft = new VictorSPX(11);
     topRight = new VictorSPX(12);
-    bottomRight = new VictorSPX(13);*/
+    bottomRight = new VictorSPX(13);
 
     //PRO-FRANK
     /*topLeft = new TalonSRX(1);
@@ -443,16 +450,16 @@ public class Robot extends TimedRobot {
     bottomRight.setInverted(true);*/
 
     //ATLAS
-    driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
-    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);
+    /*driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
+    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);*/
 
     /*CALYPSO ONLY, FLIP THE RIGHT ONE ON ATLAS REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE */
-    //driveLeftEnc = new Encoder(10, 11, false, EncodingType.k4X);
-    //driveRightEnc = new Encoder(13, 12, true, EncodingType.k4X);
+    driveLeftEnc = new Encoder(10, 11, false, EncodingType.k4X);
+    driveRightEnc = new Encoder(13, 12, true, EncodingType.k4X);
 
     elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X); //ATLAS
-    winchEnc = new Encoder(21,22,false, EncodingType.k4X); //ATLAS
-    //winchEnc = new Encoder(0,1,false, EncodingType.k4X);
+    //winchEnc = new Encoder(21,22,false, EncodingType.k4X); //ATLAS
+    winchEnc = new Encoder(0,1,false, EncodingType.k4X);  // CALYPSO
 
 
     //PRO-FRANK
@@ -462,7 +469,8 @@ public class Robot extends TimedRobot {
 		//driveRightEnc.setDistancePerPulse(1);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
-    hatchPot = new AnalogPotentiometer(4, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 0 CALYPSO
+   // hatchPot = new AnalogPotentiometer(4, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 0 CALYPSO
+    hatchPot = new AnalogPotentiometer(0, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 0 CALYPSO
 
     //AnalogInput ai1 = new AnalogInput(0);
     //AnalogInput ai2 = new AnalogInput(2);
@@ -471,9 +479,15 @@ public class Robot extends TimedRobot {
     //hatchPot = new AnalogPotentiometer(ai2, 360, 30);
 
     //ATLAS
+    /*
     roller = new TalonSRX(30);
     leftSDS = new TalonSRX(40);
-    rightSDS = new TalonSRX(22);
+    rightSDS = new TalonSRX(22);*/
+    
+    //CALYPSO
+    roller = new VictorSPX(30);
+    leftSDS = new TalonSRX(40);
+    rightSDS = new VictorSPX(22);
 
     //ANTI-FRANK
     winch = new TalonSRX(3);  //ATLAS was 3
@@ -483,10 +497,6 @@ public class Robot extends TimedRobot {
     elevator = new TalonSRX(21); //ATLAS
     //elevator = new VictorSPX(0);
 
-    //CALYPSO
-    //roller = new VictorSPX(30);
-    //leftSDS = new TalonSRX(40);
-    //rightSDS = new VictorSPX(22);
 
     SmartDashboard.putNumber("P", 0.0);
     SmartDashboard.putNumber("I", 0.0);
@@ -509,16 +519,20 @@ public class Robot extends TimedRobot {
     spinOutput = new TurnPIDOutput();
     spinInput = new LimelightAnglePIDSource();
 
+    spinnyOutput = new SpinnyPIDOutput(topLeft, bottomLeft, topRight, bottomRight, 1.0);
+    spinnyInput = new SpinnyPIDSource(driveLeftEnc, driveRightEnc);
+
     hatchController = new SnazzyMotionPlanner(hatchP, hatchI, 0, 0, hatchkA, hatchkV, 0, 0, hatchPot, hatchPIDOutput, 0.01, "hatch.csv", this);
     winchController = new SnazzyMotionPlanner(winchP, winchI, 0, 0, 0, 0, 0, 0, winchEnc, winchPIDOutput, 0.01, "winch.csv", this);
     elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
     elevatorController.setProtect(-0.1, 0.2, 100); //ATLAS
-    leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.005, "left.csv", this);
-    rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.005, "right.csv", this);
+    leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.015, "left.csv", this);
+    rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.015, "right.csv", this);
 
     spinCalculator = new SnazzyPIDCalculator(spinP, spinI, spinD, 0.0, spinInput, spinOutput, 0.02, "spin.csv");
     spinCalculator.setOutputRange(-0.5, 0.5);
+    spinnyController = new SnazzyMotionPlanner(spinP, spinI, spinD, 0.0,0.0, 0.0, 0.0, 0.0, spinnyInput, spinnyOutput, 0.015, "spinny.csv", this);
     // PRO FRANK ONLY
     //driveSolenoid = new DoubleSolenoid(2, 3);
 		//compressor = new Compressor(0);
@@ -633,11 +647,11 @@ public class Robot extends TimedRobot {
     hatchLogic();
     winchLogic();
     intakeLogic();
-    //autoDriveLogic();
+    autoDriveLogic();
     magicLogic();
-    //if(!trajStarted && !rocketLeftActive && !steppyActive && !leftFarActive && !rightFarActive && !rocketRightActive){
+    if(!trajStarted && !rocketLeftCloseActive && !steppyActive && !leftFarActive && !rightFarActive && !rocketRightCloseActive){
       drivingLogic();
-    //}
+    }
 
     elevatorLogic(); //ATLAS
     
@@ -734,22 +748,25 @@ public class Robot extends TimedRobot {
     }*/
   }
 
-  /*public void autoDriveLogic() {
+  public void autoDriveLogic() {
     if(rocketLeftButton.held()) {
       if(rocketLeftButton.changed()) {
         driveRightEnc.reset();
         driveLeftEnc.reset();
-        //leftController.configureTrajectory(rocketLeftTraj.getLeftTrajectory(), false);
-        //rightController.configureTrajectory(rocketLeftTraj.getRightTrajectory(), false);
-        leftController.enable();
-        rightController.enable();
-        rocketLeftActive = true;
+        leftCloseAuto.init();
+        rocketLeftCloseActive = true;
+      }else{
+        leftCloseAuto.periodic();
       }
     } else {
-      if(rocketLeftActive){
+      if(rocketLeftButton.changed()){
+        leftCloseAuto.stopAll();
+        leftCloseAuto.nextStage();
+      }
+      if(rocketLeftCloseActive){
         rightController.disable();
         leftController.disable();
-        rocketLeftActive = false;
+        rocketLeftCloseActive = false;
       }
     }
 
@@ -757,17 +774,20 @@ public class Robot extends TimedRobot {
       if(rocketRightButton.changed()) {
         driveRightEnc.reset();
         driveLeftEnc.reset();
-        //leftController.configureTrajectory(rocketRightTraj.getLeftTrajectory(), false);
-        //rightController.configureTrajectory(rocketRightTraj.getRightTrajectory(), false);
-        leftController.enable();
-        rightController.enable();
-        rocketRightActive = true;
+        rightCloseAuto.init();
+        rocketRightCloseActive = true;
+      }else{
+        rightCloseAuto.periodic();
       }
     } else {
-      if(rocketRightActive){
+      if(rocketRightButton.changed()){
+        rightCloseAuto.stopAll();
+        rightCloseAuto.nextStage();
+      }
+      if(rocketRightCloseActive){
         rightController.disable();
         leftController.disable();
-        rocketRightActive = false;
+        rocketRightCloseActive = false;
       }
     }
 
@@ -830,7 +850,7 @@ public class Robot extends TimedRobot {
       }
       
     }
-  }*/
+  }
 
   public void eightMagicLogic(){
     if(magicButton.held()) {
@@ -1010,10 +1030,12 @@ public class Robot extends TimedRobot {
     if(calibrateButton.changed()&& calibrateButton.on()){
         driveRightEnc.reset();
         driveLeftEnc.reset();
-        leftController.enable(); 
+        /*leftController.enable(); 
         rightController.enable(); 
         leftController.startCalibration();
-        rightController.startCalibration();
+        rightController.startCalibration();*/
+        spinnyController.enable();
+        spinnyController.startCalibration();
         
         /*
         winchEnc.reset();
@@ -1024,10 +1046,11 @@ public class Robot extends TimedRobot {
 				
     }else if (calibrateButton.changed()&& !calibrateButton.on()){
       
-      leftController.disable();
-      rightController.disable();
+      //leftController.disable();
+      //rightController.disable();
       /*
       p.disable();*/
+      spinnyController.disable();
       System.out.println("disabel");
     }
     //System.out.println(calibrateButton.changed()+" " +calibrateButton.on());
@@ -1040,7 +1063,7 @@ public class Robot extends TimedRobot {
       if(calibrateButton.on() && calibrateButton.changed()){
         System.out.println("ENABLE");
 
-        table = NetworkTableInstance.getDefault().getTable("limelight");
+        /*table = NetworkTableInstance.getDefault().getTable("limelight");
         
         double[] defaultValue = new double[6];
         double[] tarpos = table.getEntry("camtran").getDoubleArray(defaultValue);
@@ -1056,17 +1079,15 @@ public class Robot extends TimedRobot {
 
         dynamo.generate();
 
-        System.out.println("GENED UP");
+        System.out.println("GENED UP");*/
 
-        //driveRightEnc.reset();
-        //driveLeftEnc.reset();
         //leftController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
         //rightController.configureGoal(SmartDashboard.getNumber("Setpoint", 0.0), 100, 100, false);
-            System.out.println(dynamo.getLeftTrajectory().length());
+            //System.out.println(dynamo.getLeftTrajectory().length());
             driveLeftEnc.reset();
             driveRightEnc.reset();
-            leftController.configureTrajectory(dynamo.getLeftTrajectory(), false);
-            rightController.configureTrajectory(dynamo.getRightTrajectory(), false);
+            leftController.configureTrajectory(racetrackTurnTraj.getLeftTrajectory(), false);
+            rightController.configureTrajectory(racetrackTurnTraj.getRightTrajectory(), false);
 
             rightController.enable();
             leftController.enable();

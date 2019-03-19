@@ -18,7 +18,7 @@ public class TrajectoryPlanner {
 	private double m_maxA;
 	private double m_maxV;
 	private double m_maxJ;
-	private double wheelbase =  21.75+2.0;
+	private double wheelbase =  21.75+1.6+.32;
 	//private double wheelbase =  25.125 + 3.05;// FRANK
 	private String m_name;
 	
@@ -37,7 +37,7 @@ public class TrajectoryPlanner {
 	}
 	
     public void generate() {
-    	Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC, Trajectory.Config.SAMPLES_HIGH, 0.005, m_maxV, m_maxA, m_maxJ);
+    	Trajectory.Config config = new Trajectory.Config(Trajectory.FitMethod.HERMITE_CUBIC, Trajectory.Config.SAMPLES_HIGH, 0.015, m_maxV, m_maxA, m_maxJ);
     	Waypoint[] points = new Waypoint[arrayPoints.length] ;
 
     	for (int i=0; i<arrayPoints.length;i++) {
@@ -65,25 +65,25 @@ public class TrajectoryPlanner {
         for (int i = 0; i < m_trajectory.length(); i++) {
             Trajectory.Segment seg = m_trajectory.get(i);
             
-            log.open(m_name+"Trajectory.csv","Timestamp,X,Y,Position,Velocity,Accel,Jerk,Heading\n");
-            log.write(seg.dt + "," + seg.x + "," + seg.y + "," + seg.position + "," + seg.velocity + "," + 
-                    seg.acceleration + "," + seg.jerk + "," + seg.heading + "\n");
+			//log.open(m_name+"Trajectory.csv","Timestamp,X,Y,Position,Velocity,Accel,Jerk,Heading\n");
+			log.open(String.format("%sTrajectory.csv", m_name),"Timestamp,X,Y,Position,Velocity,Accel,Jerk,Heading\n");
+            //log.write(seg.dt + "," + seg.x + "," + seg.y + "," + seg.position + "," + seg.velocity + "," + 
+					//seg.acceleration + "," + seg.jerk + "," + seg.heading + "\n");
+			log.write(String.format("%g,%g,%g,%g,%g,%g,%g,%g\n", seg.dt, seg.x, seg.y, seg.position, seg.velocity, seg.acceleration, seg.jerk, seg.heading));
         }
         log.close();
         for (int i = 0; i < m_trajectory.length(); i++) {
             Trajectory.Segment seg = m_left.get(i);
             
-            log.open(m_name+"LeftTrajectory.csv","Timestamp,X,Y,Position,Velocity,Accel,Jerk,Heading\n");
-            log.write(seg.dt + "," + seg.x + "," + seg.y + "," + seg.position + "," + seg.velocity + "," + 
-                    seg.acceleration + "," + seg.jerk + "," + seg.heading + "\n");
+            log.open(String.format("%sLeftTrajectory.csv", m_name),"Timestamp,X,Y,Position,Velocity,Accel,Jerk,Heading\n");
+            log.write(String.format("%g,%g,%g,%g,%g,%g,%g,%g\n", seg.dt, seg.x, seg.y, seg.position, seg.velocity, seg.acceleration, seg.jerk, seg.heading));
         }
         log.close();
         for (int i = 0; i < m_trajectory.length(); i++) {
             Trajectory.Segment seg = m_right.get(i);
             
-            log.open(m_name+"RightTrajectory.csv","Timestamp,X,Y,Position,Velocity,Accel,Jerk,Heading\n");
-            log.write(seg.dt + "," + seg.x + "," + seg.y + "," + seg.position + "," + seg.velocity + "," + 
-                    seg.acceleration + "," + seg.jerk + "," + seg.heading + "\n");
+            log.open(String.format("%sRightTrajectory.csv", m_name),"Timestamp,X,Y,Position,Velocity,Accel,Jerk,Heading\n");
+            log.write(String.format("%g,%g,%g,%g,%g,%g,%g,%g\n", seg.dt, seg.x, seg.y, seg.position, seg.velocity, seg.acceleration, seg.jerk, seg.heading));
         }
         log.close();
 	}
@@ -120,11 +120,14 @@ public class TrajectoryPlanner {
     }
     
     public String getFileName() {
-    	String name = new String("/home/lvuser/"+m_name+"Trajectory.");
+		//String name = new String("/home/lvuser/"+m_name+"Trajectory.");
+		String name = String.format("/home/lvuser/%sTrajectory.", m_name);
     	for (int i=0;i<arrayPoints.length;i++) {
-    		name += Double.toString(arrayPoints[i][0])+"."+Double.toString(arrayPoints[i][1])+"."+Double.toString(arrayPoints[i][2]);
+			//name += Double.toString(arrayPoints[i][0])+"."+Double.toString(arrayPoints[i][1])+"."+Double.toString(arrayPoints[i][2]);
+			name = String.format("%s%g.%g.%g", name, arrayPoints[i][0], arrayPoints[i][1], arrayPoints[i][2]);
     	}
-    	name += Double.toString(m_maxV)+Double.toString(m_maxA)+Double.toString(m_maxJ)+".csv";
+		//name += Double.toString(m_maxV)+Double.toString(m_maxA)+Double.toString(m_maxJ)+".csv";
+		name = String.format("%s%g%g%g.csv", name, m_maxV, m_maxA, m_maxJ);
     	return name;
     }
     
