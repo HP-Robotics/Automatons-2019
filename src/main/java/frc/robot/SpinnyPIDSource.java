@@ -28,7 +28,7 @@ public class SpinnyPIDSource implements PIDSource {
 
 	@Override
 	public double pidGet() {
-        return e1.pidGet()-e2.pidGet();
+        return (e1.pidGet()-e2.pidGet())*Robot.DRIVE_ENC_TO_INCH;
     }
     
   

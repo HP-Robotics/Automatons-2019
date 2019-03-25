@@ -81,7 +81,7 @@ public class LeftRocketCloseAuto extends Autonomous {
 	}
 
 	public int winchWaitPeriodic(){
-		if(robot.winchDown.get()){
+		if(robot.winchDown.get()){ //TODO TRUE GO AWAY ATLAS
 			nextStage();
 		}
 		return 0;
@@ -107,8 +107,8 @@ public class LeftRocketCloseAuto extends Autonomous {
 		robot.driveRightEnc.reset();
 
 
-		robot.leftController.configureGoal(48, 100, 100, false);
-		robot.rightController.configureGoal(48, 100, 100, false);
+		robot.leftController.configureGoal(12, 100, 100, false);
+		robot.rightController.configureGoal(12, 100, 100, false);
 
 		
 		robot.leftController.enable();

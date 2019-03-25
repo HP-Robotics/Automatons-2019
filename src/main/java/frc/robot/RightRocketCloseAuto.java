@@ -46,7 +46,8 @@ public class RightRocketCloseAuto extends Autonomous {
 	}
 	
 	public int goStart() {
-
+			robot.driveLeftEnc.reset();
+			robot.driveRightEnc.reset();
 	
 			robot.leftController.configureTrajectory(robot.rightRocketCloseTraj.getLeftTrajectory(), false);
 			robot.rightController.configureTrajectory(robot.rightRocketCloseTraj.getRightTrajectory(), false);
@@ -79,7 +80,7 @@ public class RightRocketCloseAuto extends Autonomous {
 	}
 
 	public int winchWaitPeriodic(){
-		if(robot.winchDown.get()){
+		if(robot.winchDown.get()){ //TODO ATLAS REMOVE THE TRUE WE GOTTA SAFETY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 			nextStage();
 		}
 		return 0;
@@ -105,8 +106,8 @@ public class RightRocketCloseAuto extends Autonomous {
 		robot.driveRightEnc.reset();
 
 
-		robot.leftController.configureGoal(48, 100, 100, false);
-		robot.rightController.configureGoal(48, 100, 100, false);
+		robot.leftController.configureGoal(12, 100, 100, false);
+		robot.rightController.configureGoal(12, 100, 100, false);
 
 		
 		robot.leftController.enable();
@@ -146,8 +147,8 @@ public int backStart(){
 	robot.driveLeftEnc.reset();
 	robot.driveRightEnc.reset();
 
-	robot.leftController.configureGoal(-8.0, 100, 100, false);
-	robot.rightController.configureGoal(-8.0, 100, 100, false);
+	robot.leftController.configureGoal(-12.0, 100, 100, false);
+	robot.rightController.configureGoal(-12.0, 100, 100, false);
 		
 	robot.leftController.enable();
 	robot.rightController.enable();
