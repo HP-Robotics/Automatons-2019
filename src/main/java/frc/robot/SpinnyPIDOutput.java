@@ -10,12 +10,12 @@ public class SpinnyPIDOutput implements PIDOutput {
 	
 
 	/*CALYPSO IS VICTOR ATLAS IS TALON*/
-    VictorSPX m;
-    VictorSPX m2;
-    VictorSPX m3;
-    VictorSPX m4;
+    TalonSRX m;
+    TalonSRX m2;
+    TalonSRX m3;
+    TalonSRX m4;
 	double mult;
-	public SpinnyPIDOutput(VictorSPX motor, VictorSPX motor2, VictorSPX motor3, VictorSPX motor4, double multiplier)  {
+	public SpinnyPIDOutput(TalonSRX motor, TalonSRX motor2, TalonSRX motor3, TalonSRX motor4, double multiplier)  {
         m = motor;
         m2 = motor2;
         m3 = motor3;

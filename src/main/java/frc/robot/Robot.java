@@ -72,7 +72,7 @@ public class Robot extends TimedRobot {
   public static final int DRIVER_STICK2 = 1;
   public static final int OPERATOR_BOX = 2;
 
-  public static final double HATCH_UP = 95.0;//ATLAS 90.0
+  public static final double HATCH_UP = 90.0;//ATLAS 90.0
   public static final double HATCH_DOWN = 155.0;//ATLAS 155.0
   public static final double HATCH_SAFE_BOTTOM = 250.0;
   public static final double HATCH_SAFE_TOP = 30.0;
@@ -166,16 +166,16 @@ public class Robot extends TimedRobot {
   public boolean pidTuning = false;
 
   //ATLAS
-  /*public TalonSRX topRight;
+  public TalonSRX topRight;
   public TalonSRX topLeft;
   public TalonSRX bottomRight;
-  public TalonSRX bottomLeft;*/
+  public TalonSRX bottomLeft;
 
   //CALYPSO
-  public VictorSPX topRight;
+  /*public VictorSPX topRight;
   public VictorSPX topLeft;
   public VictorSPX bottomRight;
-  public VictorSPX bottomLeft;
+  public VictorSPX bottomLeft;*/
 
 
   public Encoder driveLeftEnc;
@@ -190,11 +190,11 @@ public class Robot extends TimedRobot {
   public Joystick driverStick2;
   public Joystick operatorBox;
 
-  //public TalonSRX roller; //ATLAS
-  public VictorSPX roller; //CALYPSO
+  public TalonSRX roller; //ATLAS
+  //public VictorSPX roller; //CALYPSO
   public TalonSRX leftSDS;
-  //public TalonSRX rightSDS; //ATLAS
-  public VictorSPX rightSDS; //CALYPSO
+  public TalonSRX rightSDS; //ATLAS
+  //public VictorSPX rightSDS; //CALYPSO
 
   public TalonSRX hatch;
   public TalonSRX elevator; //ATLAS
@@ -324,7 +324,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
 
-    CameraServer camera = CameraServer.getInstance();
+    /*CameraServer camera = CameraServer.getInstance();
 		if(camera != null) {
 			System.out.println("A camera was found");
 			UsbCamera c = camera.startAutomaticCapture();
@@ -334,7 +334,7 @@ public class Robot extends TimedRobot {
 			  c.setResolution(320, 240);
 				c.setFPS(15);  
 			}
-    }
+    }*/
     
     racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
     racetrackTurnTraj.generate();
@@ -441,17 +441,17 @@ public class Robot extends TimedRobot {
 
     //ATLAS
     winchDown = new DigitalInput(9);
-    /*
+    
     topLeft = new TalonSRX(10);
     bottomLeft = new TalonSRX(11);
     topRight = new TalonSRX(12);
-    bottomRight = new TalonSRX(13);*/
+    bottomRight = new TalonSRX(13);
 
     //CALYPSO
-    topLeft = new VictorSPX(10);
+    /*topLeft = new VictorSPX(10);
     bottomLeft = new VictorSPX(11);
     topRight = new VictorSPX(12);
-    bottomRight = new VictorSPX(13);
+    bottomRight = new VictorSPX(13);*/
 
     //PRO-FRANK
     /*topLeft = new TalonSRX(1);
@@ -464,16 +464,16 @@ public class Robot extends TimedRobot {
     bottomRight.setInverted(true);*/
 
     //ATLAS
-    /*driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
-    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);*/
+    driveRightEnc = new Encoder(11, 10, false, EncodingType.k4X);
+    driveLeftEnc = new Encoder(13, 12, true, EncodingType.k4X);
 
     /*CALYPSO ONLY, FLIP THE RIGHT ONE ON ATLAS REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE */
-    driveLeftEnc = new Encoder(10, 11, false, EncodingType.k4X);
-    driveRightEnc = new Encoder(13, 12, true, EncodingType.k4X);
+    /*driveLeftEnc = new Encoder(10, 11, false, EncodingType.k4X);
+    driveRightEnc = new Encoder(13, 12, true, EncodingType.k4X);*/
 
     elevatorEnc = new Encoder(23, 24, true, EncodingType.k4X); //ATLAS
-    //winchEnc = new Encoder(21,22,false, EncodingType.k4X); //ATLAS
-    winchEnc = new Encoder(0,1,false, EncodingType.k4X);  // CALYPSO
+    winchEnc = new Encoder(21,22,false, EncodingType.k4X); //ATLAS
+    //winchEnc = new Encoder(0,1,false, EncodingType.k4X);  // CALYPSO
 
 
     //PRO-FRANK
@@ -483,8 +483,8 @@ public class Robot extends TimedRobot {
 		//driveRightEnc.setDistancePerPulse(1);
 
     //winch = new AnalogPotentiometer(0, 360, 30);
-   // hatchPot = new AnalogPotentiometer(4, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 0 CALYPSO
-    hatchPot = new AnalogPotentiometer(0, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 0 CALYPSO
+    hatchPot = new AnalogPotentiometer(4, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 0 CALYPSO
+    //hatchPot = new AnalogPotentiometer(0, 270, 0); /* 2700 Max, 2610 Min */ // 4 ATLAS; 0 CALYPSO
 
     //AnalogInput ai1 = new AnalogInput(0);
     //AnalogInput ai2 = new AnalogInput(2);
@@ -493,15 +493,15 @@ public class Robot extends TimedRobot {
     //hatchPot = new AnalogPotentiometer(ai2, 360, 30);
 
     //ATLAS
-    /*
+    
     roller = new TalonSRX(30);
     leftSDS = new TalonSRX(40);
-    rightSDS = new TalonSRX(22);*/
+    rightSDS = new TalonSRX(22);
     
     //CALYPSO
-    roller = new VictorSPX(30);
+    /*roller = new VictorSPX(30);
     leftSDS = new TalonSRX(40);
-    rightSDS = new VictorSPX(22);
+    rightSDS = new VictorSPX(22);*/
 
     //ANTI-FRANK
     winch = new TalonSRX(3);  //ATLAS was 3
@@ -791,7 +791,7 @@ public class Robot extends TimedRobot {
         spinnyController.enable();
         spinnyActive = true;
       }else{
-        leftCloseAuto.periodic();
+        //leftCloseAuto.periodic();
       }
     } else {
       if(spinnyActive){

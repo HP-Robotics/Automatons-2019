@@ -10,10 +10,10 @@ public class DrivePIDOutput implements PIDOutput {
 	
 
 	/*CALYPSO IS VICTOR ATLAS IS TALON*/
-    VictorSPX m;
-    VictorSPX m2;
+    TalonSRX m;
+    TalonSRX m2;
 	double mult;
-	public DrivePIDOutput(VictorSPX motor, VictorSPX motor2, double multiplier)  {
+	public DrivePIDOutput(TalonSRX motor, TalonSRX motor2, double multiplier)  {
         m = motor;
         m2 = motor2;
 		mult = multiplier;
