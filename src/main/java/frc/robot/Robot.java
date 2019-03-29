@@ -73,7 +73,7 @@ public class Robot extends TimedRobot {
   public static final int OPERATOR_BOX = 2;
 
   public static final double HATCH_UP = 90.0;//ATLAS 90.0
-  public static final double HATCH_DOWN = 155.0;//ATLAS 155.0
+  public static final double HATCH_DOWN = 150.0;//ATLAS 155.0
   public static final double HATCH_SAFE_BOTTOM = 250.0;
   public static final double HATCH_SAFE_TOP = 30.0;
   public static final double HATCH_EMERGENCY_DOWN = 235.0;
@@ -116,8 +116,8 @@ public class Robot extends TimedRobot {
 
   public static final double hatchkA = 0;//0.000501017;
   public static final double hatchkV = 0;//0.00634177;
-  public static final double hatchP = 0.01;
-  public static final double hatchI = 0.00004;
+  public static final double hatchP = 0.02;
+  public static final double hatchI = 0.00012;
 
   public static final double winchP = 0.003;
   public static final double winchI = 0.00001;
@@ -630,7 +630,7 @@ public class Robot extends TimedRobot {
     winchController.enable();
     
     hatchController.setSetpoint(hatchPot.get());  /* Gremlin mitigation.  If the gremlin prevents this from working, at least hold current position */
-    hatchController.configureGoal(HATCH_UP-hatchPot.get(), 500, 500, true);
+    //hatchController.configureGoal(60-hatchPot.get(), 500, 500, true);
     hatchController.enable();
 
     // PRO FRANK
