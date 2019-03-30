@@ -52,8 +52,8 @@ public class LeftRocketCloseAuto extends Autonomous {
 		robot.driveRightEnc.reset();
 
 
-		robot.leftController.configureTrajectory(robot.leftRocketCloseTraj.getLeftTrajectory(), false);
-		robot.rightController.configureTrajectory(robot.leftRocketCloseTraj.getRightTrajectory(), false);
+		//robot.leftController.configureTrajectory(robot.leftRocketCloseTraj.getLeftTrajectory(), false);
+		//robot.rightController.configureTrajectory(robot.leftRocketCloseTraj.getRightTrajectory(), false);
 
 			
 		robot.leftController.enable();

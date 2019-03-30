@@ -72,11 +72,11 @@ public class Robot extends TimedRobot {
   public static final int DRIVER_STICK2 = 1;
   public static final int OPERATOR_BOX = 2;
 
-  public static final double HATCH_UP = 90.0;//ATLAS 90.0
-  public static final double HATCH_DOWN = 150.0;//ATLAS 155.0
-  public static final double HATCH_SAFE_BOTTOM = 250.0;
-  public static final double HATCH_SAFE_TOP = 30.0;
-  public static final double HATCH_EMERGENCY_DOWN = 235.0;
+  public static final double HATCH_UP = 50.0;//ATLAS 90.0
+  public static final double HATCH_DOWN = 107.5;//ATLAS 155.0
+  public static final double HATCH_SAFE_BOTTOM = 210.0;
+  public static final double HATCH_SAFE_TOP = 1.0;
+  public static final double HATCH_EMERGENCY_DOWN = 195.0;
 
   public static final double ENC_ERROR = 5;
   public static final double HATCH_LEVEL1 = 100;
@@ -117,7 +117,7 @@ public class Robot extends TimedRobot {
   public static final double hatchkA = 0;//0.000501017;
   public static final double hatchkV = 0;//0.00634177;
   public static final double hatchP = 0.02;
-  public static final double hatchI = 0.00012;
+  public static final double hatchI = 0.0003;
 
   public static final double winchP = 0.003;
   public static final double winchI = 0.00001;
@@ -132,6 +132,7 @@ public class Robot extends TimedRobot {
   public final static double elevator_max_a = 8000;
   public final static double elevator_max_v = 5555;
 
+  public boolean firstHop = false;
   public boolean hopping = false;
    public double hoptime;
 
@@ -223,10 +224,10 @@ public class Robot extends TimedRobot {
   public Button winchToggleButton;
   public Button elevatorHopButton;
   public Button stepAutoButton;
-  public Button rocketLeftFarButton;
+  /*public Button rocketLeftFarButton;
   public Button rocketRightFarButton;
   public Button rocketRightButton;
-  public Button lRocketFeederButton;
+  public Button lRocketFeederButton;*/
 
 
 
@@ -266,14 +267,14 @@ public class Robot extends TimedRobot {
   public Button[] elevatorButtonArray;
 
   // TODO - Add trajectories for sandstorm moves
-  double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
+  /*double[][] racetrackTurnPlan = {{0, 0, 0},  {48, -48, -90}, {0, -96, -180}};
   double[][] leftRocketClosePlan = {{0, 0, 0},{30,0,0},{127.5-10.5, 95.7-(23.0/4.0), 28.75}};
   double[][] rightRocketClosePlan = {{0, 0, 0},{30,0,0},{127.5-10.5, -(95.7-(23.0/4.0)), -28.75}};
   double[][] stepAutoPlan = {{0,0,0},{50,0,0}};
   double[][] leftRocketFarAutoPlan = {{0,0,0},{36,0,0},{200,50,0}};
   double[][] rightRocketFarAutoPlan = {{0,0,0},{36,0,0},{200,-50,0}};
   double[][] leftCloseRocketBackPlan = {{0,0,0},{48, -48,-61.25}}; //TODO //TODO 
-  double[][] leftCloseRocketFeederPlan = {{0,0,0},{48, 60, 90},{48,150,90}}; //TODO //TODO 
+  double[][] leftCloseRocketFeederPlan = {{0,0,0},{48, 60, 90},{48,150,90}}; //TODO //TODO */
   
 
   public double[] winchArray = {0, /*923,*/ 2592};
@@ -281,7 +282,7 @@ public class Robot extends TimedRobot {
   public int winchCount = 0;
   public boolean winchDefault = true;
   
-  TrajectoryPlanner racetrackTurnTraj;
+  /*TrajectoryPlanner racetrackTurnTraj;
   TrajectoryPlanner leftRocketCloseTraj;
   TrajectoryPlanner rocketLeftFarTraj;
   TrajectoryPlanner rocketRightFarTraj;
@@ -289,14 +290,14 @@ public class Robot extends TimedRobot {
   TrajectoryPlanner leftCloseToShipTraj;
   TrajectoryPlanner leftShipToFeederTraj;
 
-  TrajectoryPlanner stepTraj;
+  TrajectoryPlanner stepTraj;*/
 
   StepAuto steppy;
   public boolean steppyActive = false;
 
   public boolean spinnyActive = false;
 
-  LeftRocketFarAuto leftFarAuto;
+  /*LeftRocketFarAuto leftFarAuto;
   public boolean leftFarActive = false;
 
   RightRocketFarAuto rightFarAuto;
@@ -309,7 +310,7 @@ public class Robot extends TimedRobot {
   public boolean rocketRightCloseActive = false;
 
   LeftRocketToFeederAuto lRocketFeederAuto;
-  public boolean lRocketFeederActive = false;
+  public boolean lRocketFeederActive = false;*/
 
   // PRO FRANK ONLY
 	//DoubleSolenoid driveSolenoid;
@@ -336,7 +337,7 @@ public class Robot extends TimedRobot {
 			}
     }*/
     
-    racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
+    /*racetrackTurnTraj = new TrajectoryPlanner(racetrackTurnPlan,50, 50, 50, "RacetrackTurn");
     racetrackTurnTraj.generate();
     
 
@@ -360,18 +361,18 @@ public class Robot extends TimedRobot {
     leftShipToFeederTraj.generate();
 
     stepTraj = new TrajectoryPlanner(stepAutoPlan, max_traj_v*0.7, max_traj_a*0.7, max_traj_j*0.7, "StepAuto");
-    stepTraj.generate();
+    stepTraj.generate();*/
 
     steppy = new StepAuto(this);
 
-    leftFarAuto = new LeftRocketFarAuto(this);
+    /*leftFarAuto = new LeftRocketFarAuto(this);
 
     rightFarAuto = new RightRocketFarAuto(this);
 
     leftCloseAuto = new LeftRocketCloseAuto(this);
     rightCloseAuto = new RightRocketCloseAuto(this);
 
-    lRocketFeederAuto = new LeftRocketToFeederAuto(this);
+    lRocketFeederAuto = new LeftRocketToFeederAuto(this);*/
 
     driverStick1 = new Joystick(DRIVER_STICK1);
     driverStick2 = new Joystick(DRIVER_STICK2);
@@ -396,10 +397,10 @@ public class Robot extends TimedRobot {
     yButton1 = new Button(driverStick1, 4, "Y");
     trigger1 = new Button(driverStick1, 1, "SDS Out");
     rocketLeftButton = new Button(driverStick2, 8, "DATA EXPUNGED");
-    lRocketFeederButton = new Button(driverStick2, 9, "DATA EXPUNGED");
+    /*lRocketFeederButton = new Button(driverStick2, 9, "DATA EXPUNGED");
     rocketRightButton = new Button(driverStick2, 14, "DATA EXPUNGED");
     rocketLeftFarButton = new Button(driverStick2, 7, "DATA EXPUNGED");
-    rocketRightFarButton = new Button(driverStick2, 13, "DATA EXPUNGED");
+    rocketRightFarButton = new Button(driverStick2, 13, "DATA EXPUNGED");*/
 
     //thumb1 = new Button(driverStick1, 2, "SDS Out");
 
@@ -541,8 +542,8 @@ public class Robot extends TimedRobot {
     elevatorController = new SnazzyMotionPlanner(elevatorP, elevatorI, elevatorD, 0, elevatorkA, elevatorkV, 0, 0, elevatorEnc, elevatorPIDOutput, 0.01, "elevator.csv", this);
     elevatorController.setOutputRange(-0.4, 1.0);
     elevatorController.setProtect(-0.1, 0.2, 100); //ATLAS
-    leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.015, "left.csv", this);
-    rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.015, "right.csv", this);
+    //leftController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, -drivetkA, -drivetkV, leftInInches, leftPIDOutput, 0.015, "left.csv", this);
+    //rightController = new SnazzyMotionPlanner(driveP, driveI, driveD, 0, drivekA, drivekV, drivetkA, drivetkV, rightInInches, rightPIDOutput, 0.015, "right.csv", this);
 
     spinCalculator = new SnazzyPIDCalculator(spinP, spinI, spinD, 0.0, spinInput, spinOutput, 0.02, "spin.csv");
     spinCalculator.setOutputRange(-0.5, 0.5);
@@ -561,10 +562,10 @@ public class Robot extends TimedRobot {
     hatchController.configureGoal(0, 500, 500, true);
     hatchController.enable();
 
-    leftController.configureGoal(0, 10, 10, false);
+    /*leftController.configureGoal(0, 10, 10, false);
     leftController.enable();
     rightController.configureGoal(0, 10, 10, false);
-    rightController.enable();
+    rightController.enable();*/
 
     elevatorController.configureGoal(0, elevator_max_a, elevator_max_v, false); // ATLAS
     elevatorController.enable(); // ATLAS
@@ -599,11 +600,12 @@ public class Robot extends TimedRobot {
     //ATLAS
     //TODO - Smartdashboard?  Button?
     teleopInit();
-    if (SmartDashboard.getBoolean("Elevator Hop", true)) {
-      elevatorController.configureGoal(HOP_ELEVATOR, elevator_max_v, elevator_max_a, true);  //ATLAS
+    /*if (SmartDashboard.getBoolean("Elevator Hop", true)) {
+      elevatorController.setOutputRange(0.001, 0.002);
+      elevatorController.configureGoal(/*HOP_ELEVATOR 100, elevator_max_v, elevator_max_a, true);  //ATLAS
       hopping = true;
       hoptime = Timer.getFPGATimestamp();
-    }
+  }*/
   }
 
   /**
@@ -617,8 +619,8 @@ public class Robot extends TimedRobot {
   public void teleopInit() {
 
     /* Gremlin mitigation - we don't want the drive train running while we roll... */
-    leftController.reset();
-    rightController.reset();
+    //leftController.reset();
+    //rightController.reset();
 
     //elevatorController.configureGoal(0, elevator_max_v, elevator_max_a, true);
     //hatch.set(ControlMode.PercentOutput, 0.0);
@@ -630,7 +632,7 @@ public class Robot extends TimedRobot {
     winchController.enable();
     
     hatchController.setSetpoint(hatchPot.get());  /* Gremlin mitigation.  If the gremlin prevents this from working, at least hold current position */
-    //hatchController.configureGoal(60-hatchPot.get(), 500, 500, true);
+    //hatchController.configureGoal(0, 500, 500, true);
     hatchController.enable();
 
     // PRO FRANK
@@ -643,11 +645,15 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
-    
-    if(hopping && (Timer.getFPGATimestamp()-hoptime)>3.0){
+    /*if(!firstHop && hopping&& (Timer.getFPGATimestamp()-hoptime)>=1.0){
+      elevatorController.setOutputRange(-0.4, 1.0);
+      elevatorController.configureGoal(HOP_ELEVATOR-elevatorEnc.get(), elevator_max_v, elevator_max_a, true);
+      firstHop = true;
+    }
+    else if(hopping&&((elevatorEnc.get()>= HOP_ELEVATOR-ELEVATOR_ERROR)||(Timer.getFPGATimestamp()-hoptime)>3.0)){
       elevatorController.configureGoal(0-elevatorEnc.get(), elevator_max_v, elevator_max_a, false);
       hopping = false;
-    }
+    }*/
     dashboardPuts();
     updateButtons();
     if(calibrating) {
@@ -663,7 +669,7 @@ public class Robot extends TimedRobot {
     intakeLogic();
     autoDriveLogic();
     magicLogic();
-    if(!trajStarted && !rocketLeftCloseActive && !steppyActive && !leftFarActive && !rightFarActive && !rocketRightCloseActive && !spinnyActive && !lRocketFeederActive){
+    if(!trajStarted && /*!rocketLeftCloseActive && */!steppyActive /*&& !leftFarActive && !rightFarActive && !rocketRightCloseActive*/&& !spinnyActive/* && !lRocketFeederActive*/){
       drivingLogic();
     }
 
@@ -676,8 +682,8 @@ public class Robot extends TimedRobot {
     hatchController.disable();
     winchController.disable();
     elevatorController.disable(); //ATLAS
-    leftController.disable();
-    rightController.disable();
+    //leftController.disable();
+    //rightController.disable();
   }
 
   /**
@@ -697,14 +703,14 @@ public class Robot extends TimedRobot {
     aButton2.update();
     bButton2.update();
     rocketLeftButton.update();
-    rocketRightButton.update();
+    //rocketRightButton.update();
     xButton2.update();
     yButton2.update();
     trigger2.update();
     thumb2.update();
     stepAutoButton.update();
-    rocketLeftFarButton.update();
-    rocketRightFarButton.update();
+    //rocketLeftFarButton.update();
+    //rocketRightFarButton.update();
     hatchInButton2.update();
     hatchToggle.update();
     calibrateButton.update();
@@ -715,7 +721,7 @@ public class Robot extends TimedRobot {
     elevatorHopButton.update();
     resetButton.update();
     hatchFeeder.update();
-    lRocketFeederButton.update();
+    //lRocketFeederButton.update();
 
   }
   public void intakeLogic(){
@@ -727,7 +733,9 @@ public class Robot extends TimedRobot {
       leftSDS.set(ControlMode.PercentOutput, -0.5);
       rightSDS.set(ControlMode.PercentOutput, 0.5);
       //roller.set(ControlMode.PercentOutput, -0.50); //ATLAS
-      roller.set(ControlMode.PercentOutput, -0.45); //Helps Intake on Calypso, try on Atlas
+      if(!elevatorAtCargo()){
+        roller.set(ControlMode.PercentOutput, -0.45);
+       } //Helps Intake on Calypso, try on Atlas
       trigger1.toggleOff();
       System.out.println("in");
       lb.light(trigger2);
@@ -737,7 +745,9 @@ public class Robot extends TimedRobot {
       isUsingIntake = true;
       leftSDS.set(ControlMode.PercentOutput, 1.0);
       rightSDS.set(ControlMode.PercentOutput, -1.0);
-      roller.set(ControlMode.PercentOutput, 0.15);
+      if(!elevatorAtCargo()){
+        roller.set(ControlMode.PercentOutput, 0.15);
+      }
       trigger2.toggleOff();
       System.out.println("out");
       lb.light(trigger1);
@@ -764,7 +774,7 @@ public class Robot extends TimedRobot {
   }
 
   public void autoDriveLogic() {
-    if(rocketLeftButton.held()) {
+    /*if(rocketLeftButton.held()) {
       if(rocketLeftButton.changed()) {
         driveRightEnc.reset();
         driveLeftEnc.reset();
@@ -781,7 +791,7 @@ public class Robot extends TimedRobot {
         leftCloseAuto.nextStage();
         rocketLeftCloseActive = false;
       }
-    }
+    }*/
 
     if(xButton1.held()) {
       if(xButton1.changed()) {
@@ -800,7 +810,7 @@ public class Robot extends TimedRobot {
       }
     }
 
-    if(rocketRightButton.held()) {
+    /*if(rocketRightButton.held()) {
       if(rocketRightButton.changed()) {
         driveRightEnc.reset();
         driveLeftEnc.reset();
@@ -817,7 +827,7 @@ public class Robot extends TimedRobot {
         rightCloseAuto.nextStage();
         rocketRightCloseActive = false;
       }
-    }
+    }*/
 
     if(stepAutoButton.held()){
       if(stepAutoButton.changed()){
@@ -837,7 +847,7 @@ public class Robot extends TimedRobot {
       
     }
 
-    if(rocketLeftFarButton.held()){
+    /*if(rocketLeftFarButton.held()){
       if(rocketLeftFarButton.changed()){
         leftFarAuto.init();
         leftFarActive = true;
@@ -890,7 +900,7 @@ public class Robot extends TimedRobot {
       }
       
     }
-
+    */
   }
 
   public void eightMagicLogic(){
@@ -968,6 +978,8 @@ public class Robot extends TimedRobot {
     if (!elevatorController.isEnabled()){
       elevatorController.enable();
     }
+
+
     //TODO - Allow elevator to move among high levels even if the winch is not down
     // TODO - allow a little below level1 too
     if(winchDown.get()|| elevatorEnc.get()>(SAFE_UP-ELEVATOR_ERROR)){ //COMMENT IN FOR ATLAS
@@ -1010,6 +1022,14 @@ public class Robot extends TimedRobot {
     
   }
 
+public boolean elevatorAtCargo(){
+  if(isClose(elevatorController.getSetpoint(), CARGO_CARGO, 5) || isClose(elevatorController.getSetpoint(), CARGO_LEVEL1, 5) || isClose(elevatorController.getSetpoint(), CARGO_LEVEL2, 5) || isClose(elevatorController.getSetpoint(), CARGO_LEVEL3, 5)){
+    return true;
+  } else{
+    return false;
+  }
+}
+
   public void winchLogic(){
     if (!winchController.isEnabled()){
       winchController.enable();
@@ -1019,7 +1039,7 @@ public class Robot extends TimedRobot {
       winchCount++;
       //System.out.println("i tried");
       winchPos = winchCount % 2;
-      System.out.println(winchArray[winchPos]);
+      //System.out.println(winchArray[winchPos]);
       winchController.configureGoal(winchArray[winchPos]-winchEnc.get(), winch_max_v, winch_max_a, true);
     }
     //System.out.println(winchDown.get());
@@ -1065,7 +1085,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("elevatorEnc", elevatorEnc.get());
     SmartDashboard.putNumber("elevator set", elevatorController.getSetpoint());
     SmartDashboard.putBoolean("limit switch", winchDown.get());
-    SmartDashboard.putNumber("elevator current", elevator.getOutputCurrent());
+    //SmartDashboard.putNumber("elevator current", elevator.getOutputCurrent());
   }
   public void calibrateNow(SnazzyMotionPlanner p) {
     if(calibrateButton.changed()&& calibrateButton.on()){
@@ -1127,8 +1147,8 @@ public class Robot extends TimedRobot {
             //System.out.println(dynamo.getLeftTrajectory().length());
             driveLeftEnc.reset();
             driveRightEnc.reset();
-            leftController.configureTrajectory(racetrackTurnTraj.getLeftTrajectory(), false);
-            rightController.configureTrajectory(racetrackTurnTraj.getRightTrajectory(), false);
+            //leftController.configureTrajectory(racetrackTurnTraj.getLeftTrajectory(), false);
+            //rightController.configureTrajectory(racetrackTurnTraj.getRightTrajectory(), false);
 
             rightController.enable();
             leftController.enable();
@@ -1187,6 +1207,17 @@ public class Robot extends TimedRobot {
     }
     outTraj.segments[i*10] = t.segments[i];
     return outTraj;
+  }
+
+  public boolean isClose(double s, double t, double err){
+    if(s <= t+err && s>= t-err){
+      return true;
+    } else if (t <= s+err && t>= s-err){
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
 }

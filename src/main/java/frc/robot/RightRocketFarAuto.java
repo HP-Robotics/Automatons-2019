@@ -26,8 +26,8 @@ public class RightRocketFarAuto extends Autonomous {
 	
 	public int goStart() {
 
-			robot.leftController.configureTrajectory(robot.rocketRightFarTraj.getLeftTrajectory(), false);
-			robot.rightController.configureTrajectory(robot.rocketRightFarTraj.getRightTrajectory(), false);
+			//robot.leftController.configureTrajectory(robot.rocketRightFarTraj.getLeftTrajectory(), false);
+			//robot.rightController.configureTrajectory(robot.rocketRightFarTraj.getRightTrajectory(), false);
 
 			
 			robot.leftController.enable();

@@ -31,8 +31,8 @@ public class LeftRocketToFeederAuto extends Autonomous {
 		robot.driveRightEnc.reset();
 
 
-		robot.rightController.configureTrajectory(robot.leftCloseToShipTraj.getInvertedLeftTrajectory(), false);
-		robot.leftController.configureTrajectory(robot.leftCloseToShipTraj.getInvertedRightTrajectory(), false);
+		//robot.rightController.configureTrajectory(robot.leftCloseToShipTraj.getInvertedLeftTrajectory(), false);
+		//robot.leftController.configureTrajectory(robot.leftCloseToShipTraj.getInvertedRightTrajectory(), false);
 
 			
 		robot.leftController.enable();
@@ -60,8 +60,8 @@ public class LeftRocketToFeederAuto extends Autonomous {
 		robot.driveRightEnc.reset();
 
 
-		robot.rightController.configureTrajectory(robot.leftShipToFeederTraj.getRightTrajectory(), false);
-		robot.leftController.configureTrajectory(robot.leftShipToFeederTraj.getLeftTrajectory(), false);
+		//robot.rightController.configureTrajectory(robot.leftShipToFeederTraj.getRightTrajectory(), false);
+		//robot.leftController.configureTrajectory(robot.leftShipToFeederTraj.getLeftTrajectory(), false);
 
 			
 		robot.leftController.enable();

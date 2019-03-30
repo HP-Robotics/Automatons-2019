@@ -17,8 +17,8 @@ public class StepAuto extends Autonomous {
 		
 		Blueprint[] blueprints = new Blueprint[] {
 				new Blueprint(1.0, this::holdStart, this::holdPeriodic),
-				new Blueprint(5.0, this::goStart, this::goPeriodic), 
-                new Blueprint(2.0, this::backStart, this::backPeriodic),
+				//new Blueprint(5.0, this::goStart, this::goPeriodic), 
+                //new Blueprint(2.0, this::backStart, this::backPeriodic),
 				};
 		setBlueprints(blueprints);
 		
@@ -26,7 +26,7 @@ public class StepAuto extends Autonomous {
 	}
 
 	public int holdStart(){
-		robot.hatchController.configureGoal(60-robot.hatchPot.get(), 500, 500, true);
+		robot.hatchController.configureGoal(5-robot.hatchPot.get(), 500, 500, true);
 		robot.hatchController.enable();
 
 		return 0;
@@ -42,8 +42,8 @@ public class StepAuto extends Autonomous {
 			robot.driveLeftEnc.reset();
 			robot.driveRightEnc.reset();
 
-			robot.leftController.configureTrajectory(robot.stepTraj.getLeftTrajectory(), false);
-			robot.rightController.configureTrajectory(robot.stepTraj.getRightTrajectory(), false);
+			robot.leftController.configureGoal(50, robot.max_traj_v, robot.max_traj_a, false);
+			robot.rightController.configureGoal(50, robot.max_traj_v, robot.max_traj_a, false);
 
 			
 			robot.leftController.enable();
