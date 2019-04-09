@@ -75,7 +75,7 @@ public class Robot extends TimedRobot {
   public static final double HATCH_UP = 50.0;//ATLAS 90.0
   public static final double HATCH_DOWN = 107.5;//ATLAS 155.0
   public static final double HATCH_SAFE_BOTTOM = 210.0;
-  public static final double HATCH_SAFE_TOP = 1.0;
+  public static final double HATCH_SAFE_TOP = -1.0;
   public static final double HATCH_EMERGENCY_DOWN = 195.0;
 
   public static final double ENC_ERROR = 5;
@@ -162,7 +162,7 @@ public class Robot extends TimedRobot {
   final double drivetkV = 0.00143277;
   
   // 38.1 is about 180 degrees, 18.4 is about 90
-  public boolean hatchDown = false;
+  public boolean hatchDown = true;
   public boolean calibrating = false;
   public boolean pidTuning = false;
 
@@ -1049,6 +1049,7 @@ public boolean elevatorAtCargo(){
   public void hatchLogic(){
     if(!winchDown.get()&&yButton1.held()&&xButton2.held()){
       hatchController.configureGoal(HATCH_EMERGENCY_DOWN-hatchPot.get(), 500, 500, false);
+      
     }
 
     if (hatchPot.get() >= HATCH_SAFE_TOP && hatchPot.get() <= HATCH_SAFE_BOTTOM) {
